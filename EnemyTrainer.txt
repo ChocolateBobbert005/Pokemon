@@ -1,0 +1,10 @@
+Ash Ketchum, Pikachu, 50, Charizard, 55, Bulbasaur, 45, Squirtle, 44, Snorlax, 52, Pidgeot, 48
+Misty, Starmie, 46, Psyduck, 38, Gyarados, 50, Staryu, 42, Golduck, 47, Seaking, 44
+Brock, Onix, 48, Geodude, 40, Graveler, 45, Rhyhorn, 42, Golem, 50, Kabutops, 46
+Gary Oak, Blastoise, 58, Arcanine, 55, Nidoking, 53, Alakazam, 54, Gyarados, 52, Jolteon, 51
+Erika, Vileplume, 50, Tangela, 46, Victreebel, 49, Gloom, 45, Weepinbell, 47, Exeggutor, 54
+Lt Surge, Raichu, 55, Electrode, 50, Magneton, 48, Electabuzz, 52, Pikachu, 45, Voltorb, 44
+Sabrina, Alakazam, 60, Mr Mime, 50, Hypno, 52, Slowbro, 54, Kadabra, 48, Jynx, 55
+Koga, Golbat, 56, Muk, 50, Weezing, 52, Venomoth, 49, Arbok, 54, Tentacruel, 55
+Blaine, Magmar, 54, Arcanine, 58, Rapidash, 52, Ninetales, 55, Flareon, 57, Moltres, 60
+Giovanni, Persian, 50, Nidoking, 58, Nidoqueen, 56, Rhyhorn, 54, Dugtrio, 55, Kangaskhan, 57

@@ -1,0 +1,15 @@
+5,249,173 = T:\HS\Student\Computer Science\Software Engineering\TeamSeniorSlackers\Lph.png, T:\HS\Student\Computer Science\Software Engineering\TeamSeniorSlackers\LphC.png, 255,0,0
+
+255,0,0 = T:\HS\Student\Computer Science\Software Engineering\TeamSeniorSlackers\PalletTown.png, T:\HS\Student\Computer Science\Software Engineering\TeamSeniorSlackers\PalletTownCollision.png, 5,249,173 
+
+255,137,0 = T:\HS\Student\Computer Science\Software Engineering\TeamSeniorSlackers\PokeCenter.png, T:\HS\Student\Computer Science\Software Engineering\TeamSeniorSlackers\PokeCenterC.png, 0,0,0
+
+0,149,255 = T:\HS\Student\Computer Science\Software Engineering\TeamSeniorSlackers\Route1.png,T:\HS\Student\Computer Science\Software Engineering\TeamSeniorSlackers\Route1Collision.png, 0,0,255
+
+0,0,255 = T:\HS\Student\Computer Science\Software Engineering\TeamSeniorSlackers\PalletTown.png, T:\HS\Student\Computer Science\Software Engineering\TeamSeniorSlackers\PalletTownCollision.png, 0,149,255
+
+0,255,0 = T:\HS\Student\Computer Science\Software Engineering\TeamSeniorSlackers\Viridian City.png, 
+
+0,0,0 =  T:\HS\Student\Computer Science\Software Engineering\TeamSeniorSlackers\Oakint.png, "T:\HS\Student\Computer Science\Software Engineering\TeamSeniorSlackers\OakintC.png", 0,0,0
+
+255,0,0 = T:\HS\Student\Computer Science\Software Engineering\TeamSeniorSlackers\PalletTown.png, T:\HS\Student\Computer Science\Software Engineering\TeamSeniorSlackers\PalletTownCollision.png, 5,249,173 

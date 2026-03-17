@@ -44,6 +44,9 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
     private final int ENCOUNTER_COLOR = new Color(57, 148, 49).getRGB() & 0xFFFFFF;
     private final double ENCOUNTER_CHANCE = 0.09; // Chance that player encounters pokemon
 
+    // Font(Name, Style, Size)
+    private final Font NPC_FONT = new Font("Dialog", Font.BOLD, 14);
+    private final Color NPC_NAME_COLOR = Color.GRAY; // Or new Color(255, 255, 0)
     class MapData {
         String worldPath, collisionPath;
         Color spawnColor;
@@ -61,7 +64,7 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
         addKeyListener(this);
 
         loadPlayerSprites();
-        loadPortalData("H:\\APCS\\SoftwareEng\\world.txt");
+        loadPortalData("C:\\Users\\Lemkcar\\Documents\\GitCode\\Pokemon\\world.txt");
         
         // Load initial map
         loadMap("T:\\HS\\Student\\Computer Science\\Software Engineering\\TeamSeniorSlackers\\Lph.png",
@@ -137,6 +140,7 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
         } catch (IOException e) {
             System.err.println("Map Load Failed: " + e.getMessage());
         }
+        refreshNPCs(worldPath);
     }
 
     private void checkGrassEncounter() {
@@ -211,6 +215,69 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
     centerSpawnSafe();
     }
 
+    /**
+ * REFRESH NPCS
+ * Call this single method whenever you want to update the room's occupants.
+ */
+public void refreshNPCs(String currentMapPath) {
+    npcList.clear(); // Clear the stage
+    parseMasterNPCFile("npcs.txt", currentMapPath);
+}
+
+/**
+ * MASTER FILE PARSER
+ * Isolated logic to scan the big file and filter by map name.
+ */
+private void parseMasterNPCFile(String path, String filterMap) {
+    File file = new File(path);
+    if (!file.exists()) return;
+
+    try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+        String line;
+        while ((line = br.readLine()) != null) {
+            String[] data = line.split(",");
+            if (data.length < 5) continue;
+
+            String mapInFile = data[0].trim();
+            
+            // Only proceed if the NPC lives in the map we just entered
+            if (mapInFile.equalsIgnoreCase(filterMap)) {
+                String name = data[1].trim();
+                int x = Integer.parseInt(data[2].trim()) * SCALE;
+                int y = Integer.parseInt(data[3].trim()) * SCALE;
+                String spritePath = data[4].trim();
+
+                BufferedImage sprite = loadAndScaleNPCSprite(spritePath);
+                if (sprite != null) {
+                    npcList.add(new NPC(name, x, y, PLAYER_SIZE, sprite));
+                }
+            }
+        }
+    } catch (Exception e) {
+        System.err.println("NPC System Error: " + e.getMessage());
+    }
+}
+
+/**
+ * INDEPENDENT SCALER
+ * Scales NPC sprites without touching your map scaling methods.
+ */
+private BufferedImage loadAndScaleNPCSprite(String path) {
+    try {
+        BufferedImage img = ImageIO.read(new File(path));
+        BufferedImage scaled = new BufferedImage(PLAYER_SIZE, PLAYER_SIZE, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g2 = scaled.createGraphics();
+        
+        // Use Nearest Neighbor to keep the pixel art sharp
+        g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
+        g2.drawImage(img, 0, 0, PLAYER_SIZE, PLAYER_SIZE, null);
+        g2.dispose();
+        
+        return scaled;
+    } catch (Exception e) {
+        return null; 
+    }
+    }
     
 
 /**
@@ -245,7 +312,7 @@ private boolean isAreaClear(int startX, int startY) {
     // Best Practice: Check corners of player bounds rather than every pixel
 
    // Inside update()
-void update() {
+    void update() {
     int nextX = playerX;
     int nextY = playerY;
 
@@ -277,77 +344,136 @@ void update() {
     }
 
     // Ensure isColliding ignores the green color
-    boolean isColliding(int x, int y) {
-    if (x < 0 || y < 0 || x + PLAYER_SIZE > WORLD_WIDTH || y + PLAYER_SIZE > WORLD_HEIGHT) return true;
+    boolean isColliding(int nextX, int nextY) {
+    // 1. Map Boundary Check (Prevents "Out of Bounds" errors)
+    if (nextX < 0 || nextY < 0 || 
+        nextX + PLAYER_SIZE > WORLD_WIDTH || 
+        nextY + PLAYER_SIZE > WORLD_HEIGHT) return true;
 
-    // Check corners of the feet area
-    int[] checkX = {x + 5, x + PLAYER_SIZE - 5};
-    int[] checkY = {y + PLAYER_SIZE / 2, y + PLAYER_SIZE - 1};
+    // 2. NPC Collision Check
+    // We create a hitbox for the player's FEET only (bottom half)
+    Rectangle playerFeet = new Rectangle(nextX + 4, nextY + (PLAYER_SIZE / 2), PLAYER_SIZE - 8, PLAYER_SIZE / 2);
 
-    for (int px : checkX) {
-        for (int py : checkY) {
-            int pixel = collisionMap.getRGB(px, py) & 0xFFFFFF;
-            // ONLY black is a wall. Green (57, 148, 49) is NOT a wall.
-            if (pixel == 0x000000) return true; 
+    for (NPC npc : npcList) {
+        Rectangle npcFeet = new Rectangle(npc.x + 4, npc.y + (npc.size / 2), npc.size - 8, npc.size / 2);
+        if (playerFeet.intersects(npcFeet)) {
+            return true; 
         }
     }
-    return false;
+
+    // 3. COLLISION MAP CHECK (The Black Pixels)
+    // We check the corners of the player's "Feet" area on the collision map
+    int footLeft = nextX + 6;
+    int footRight = nextX + PLAYER_SIZE - 6;
+    int footTop = nextY + (PLAYER_SIZE / 2) + 4;
+    int footBottom = nextY + PLAYER_SIZE - 2;
+
+    // Check 4 points around the feet to make sure the whole base is clear
+    int[] checkX = {footLeft, footRight};
+    int[] checkY = {footTop, footBottom};
+
+    for (int x : checkX) {
+        for (int y : checkY) {
+            // Safety check: make sure coordinates are inside the map image
+            if (x >= 0 && x < collisionMap.getWidth() && y >= 0 && y < collisionMap.getHeight()) {
+                
+                // Get the color and strip the Alpha (transparency)
+                int pixelColor = collisionMap.getRGB(x, y) & 0xFFFFFF;
+
+                // 0x000000 is the Hex code for pure black
+                if (pixelColor == 0x000000) {
+                    return true; // Wall hit!
+                }
+            }
+        }
     }
 
+    return false; // No walls or NPCs hit!
+}
+
+
+    public void drawShadow(Graphics2D g2, int screenX, int screenY) {
+    g2.setColor(new Color(0, 0, 0, 60)); // Transparent black
+    // Draw an oval at the NPC's feet
+    g2.fillOval(screenX + 5, screenY + PLAYER_SIZE - 12, PLAYER_SIZE - 10, 10);
+    }
     @Override
-    protected void paintComponent(Graphics g) {
+protected void paintComponent(Graphics g) {
     super.paintComponent(g);
     if (worldMap == null) return;
 
     Graphics2D g2 = (Graphics2D) g;
 
-    // --- 1. PREP WORK (Keep this!) ---
+    // --- 1. PREP WORK ---
     int screenW = getWidth();
     int screenH = getHeight();
+    int offsetX = (WORLD_WIDTH < screenW) ? (screenW - WORLD_WIDTH) / 2 : 0;
+    int offsetY = (WORLD_HEIGHT < screenH) ? (screenH - WORLD_HEIGHT) / 2 : 0;
 
-    int offsetX = 0;
-    int offsetY = 0;
-
-    if (WORLD_WIDTH < screenW) {
-        offsetX = (screenW - WORLD_WIDTH) / 2;
-    }
-    if (WORLD_HEIGHT < screenH) {
-        offsetY = (screenH - WORLD_HEIGHT) / 2;
-    }
-
-    // --- 2. DRAW MAP (Keep this!) ---
+    // --- 2. DRAW MAP ---
     g2.drawImage(worldMap, offsetX - cameraX, offsetY - cameraY, null);
 
-    // --- 3. NEW: DRAW NPCs (Add this here!) ---
+    // --- 3. DRAW NPCs & PLAYER (Y-Sorted) ---
+    
+    // This line sorts NPCs from top to bottom before drawing
+    npcList.sort((a, b) -> Integer.compare(a.y, b.y));
+    
+    boolean playerDrawn = false;
+
     for (NPC npc : npcList) {
-        // We use the EXACT same offset/camera math so they stay stuck to the map
         int npcScreenX = npc.x - cameraX + offsetX;
         int npcScreenY = npc.y - cameraY + offsetY;
 
-        // Only draw if they are actually on the screen (saves performance)
+        // DEPTH CHECK: If player is "further up" the map than this NPC, draw player first
+        if (!playerDrawn && (playerY + PLAYER_SIZE) < (npc.y + npc.size)) {
+            drawPlayer(g2, offsetX, offsetY);
+            playerDrawn = true;
+        }
+
+        // Draw NPC if on screen
         if (npcScreenX + npc.size > 0 && npcScreenX < screenW && 
             npcScreenY + npc.size > 0 && npcScreenY < screenH) {
             
             g2.drawImage(npc.sprite, npcScreenX, npcScreenY, null);
             
-            // Optional: Draw their name tag
-            g2.setColor(Color.WHITE);
-            g2.drawString(npc.name, npcScreenX, npcScreenY - 5);
+            // Name Tag Logic (Outlines & Centering)
+            g2.setFont(NPC_FONT);
+            FontMetrics metrics = g2.getFontMetrics(NPC_FONT);
+            int nameWidth = metrics.stringWidth(npc.name);
+            int centeredNameX = npcScreenX + (npc.size / 2) - (nameWidth / 2);
+            int nameY = npcScreenY - 8;
+
+            // Black Outline
+            g2.setColor(Color.BLACK);
+            g2.drawString(npc.name, centeredNameX + 1, nameY + 1);
+            g2.drawString(npc.name, centeredNameX - 1, nameY - 1);
+            g2.drawString(npc.name, centeredNameX + 1, nameY - 1);
+            g2.drawString(npc.name, centeredNameX - 1, nameY + 1);
+
+            // Main Color
+            g2.setColor(NPC_NAME_COLOR);
+            g2.drawString(npc.name, centeredNameX, nameY);
         }
     }
 
-    // --- 4. DRAW PLAYER (Keep this!) ---
+    // SAFETY: If the player is the "lowest" thing on the map, draw them last
+    if (!playerDrawn) {
+        drawPlayer(g2, offsetX, offsetY);
+    }
+}
+
+// Helper method so we don't have to repeat the switch statement
+private void drawPlayer(Graphics2D g2, int offsetX, int offsetY) {
     BufferedImage sprite = switch (facing) {
         case UP -> playerUp;
         case DOWN -> playerDown;
         case LEFT -> playerLeft;
         case RIGHT -> playerRight;
     };
-
     if (sprite != null) {
         g2.drawImage(sprite, playerX - cameraX + offsetX, playerY - cameraY + offsetY, null);
     }
-    }
+}
 
     // Helper scaling methods (kept your logic)
     private BufferedImage scaleSquare(BufferedImage img, int size) {

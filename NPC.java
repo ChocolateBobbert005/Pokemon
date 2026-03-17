@@ -17,4 +17,6 @@ public class NPC {
     public Rectangle getBounds() {
         return new Rectangle(x, y, size, size);
     }
+
+    
 }

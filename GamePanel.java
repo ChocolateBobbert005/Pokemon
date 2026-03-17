@@ -65,6 +65,9 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
     private int partyCursor = 0; 
     private String battleMessage = ""; 
 
+    // Font(Name, Style, Size)
+    private final Font NPC_FONT = new Font("Dialog", Font.BOLD, 14);
+    private final Color NPC_NAME_COLOR = Color.GRAY; // Or new Color(255, 255, 0)
     class MapData {
         String worldPath, collisionPath;
         Color spawnColor;
@@ -82,7 +85,7 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
         addKeyListener(this);
 
         loadPlayerSprites();
-        loadPortalData("C:\\Users\\wainbra\\Documents\\GitCode\\Pokemon\\world.txt");
+        loadPortalData("C:\\Users\\Lemkcar\\Documents\\GitCode\\Pokemon\\world.txt");
         
         loadMap("T:\\HS\\Student\\Computer Science\\Software Engineering\\TeamSeniorSlackers\\Lph.png",
                 "T:\\HS\\Student\\Computer Science\\Software Engineering\\TeamSeniorSlackers\\LphC2.png");
@@ -161,6 +164,7 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
         } catch (IOException e) {
             System.err.println("Map Load Failed: " + e.getMessage());
         }
+        refreshNPCs(worldPath);
     }
 
     private void checkGrassEncounter() {
@@ -245,7 +249,86 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
                 }
             }
         }
-        centerSpawnSafe();
+    }
+    // If no clear spot found near the marker, find the first available clear spot on the map
+    centerSpawnSafe();
+    }
+
+    /**
+ * REFRESH NPCS
+ * Call this single method whenever you want to update the room's occupants.
+ */
+public void refreshNPCs(String currentMapPath) {
+    npcList.clear(); // Clear the stage
+    parseMasterNPCFile("npcs.txt", currentMapPath);
+}
+
+/**
+ * MASTER FILE PARSER
+ * Isolated logic to scan the big file and filter by map name.
+ */
+private void parseMasterNPCFile(String path, String filterMap) {
+    File file = new File(path);
+    if (!file.exists()) return;
+
+    try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+        String line;
+        while ((line = br.readLine()) != null) {
+            String[] data = line.split(",");
+            if (data.length < 5) continue;
+
+            String mapInFile = data[0].trim();
+            
+            // Only proceed if the NPC lives in the map we just entered
+            if (mapInFile.equalsIgnoreCase(filterMap)) {
+                String name = data[1].trim();
+                int x = Integer.parseInt(data[2].trim()) * SCALE;
+                int y = Integer.parseInt(data[3].trim()) * SCALE;
+                String spritePath = data[4].trim();
+
+                BufferedImage sprite = loadAndScaleNPCSprite(spritePath);
+                if (sprite != null) {
+                    npcList.add(new NPC(name, x, y, PLAYER_SIZE, sprite));
+                }
+            }
+        }
+    } catch (Exception e) {
+        System.err.println("NPC System Error: " + e.getMessage());
+    }
+}
+
+/**
+ * INDEPENDENT SCALER
+ * Scales NPC sprites without touching your map scaling methods.
+ */
+private BufferedImage loadAndScaleNPCSprite(String path) {
+    try {
+        BufferedImage img = ImageIO.read(new File(path));
+        BufferedImage scaled = new BufferedImage(PLAYER_SIZE, PLAYER_SIZE, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g2 = scaled.createGraphics();
+        
+        // Use Nearest Neighbor to keep the pixel art sharp
+        g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
+        g2.drawImage(img, 0, 0, PLAYER_SIZE, PLAYER_SIZE, null);
+        g2.dispose();
+        
+        return scaled;
+    } catch (Exception e) {
+        return null; 
+    }
+    }
+    
+
+/**
+ * Returns true if the 35x35 area starting at (startX, startY) 
+ * contains NO black pixels (0x000000).
+ */
+private boolean isAreaClear(int startX, int startY) {
+    // 1. Boundary Check
+    if (startX < 0 || startY < 0 || 
+        startX + PLAYER_SIZE >= WORLD_WIDTH || 
+        startY + PLAYER_SIZE >= WORLD_HEIGHT) {
+        return false;
     }
 
     private boolean isAreaClear(int startX, int startY) {
@@ -264,8 +347,10 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
     void update() {
         if (currentState == GameState.BATTLE) return; 
 
-        int nextX = playerX;
-        int nextY = playerY;
+   // Inside update()
+    void update() {
+    int nextX = playerX;
+    int nextY = playerY;
 
         if (up)    { nextY -= SPEED; facing = Direction.UP; }
         if (down)  { nextY += SPEED; facing = Direction.DOWN; }
@@ -284,135 +369,140 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
         cameraY = Math.max(0, Math.min(cameraY, WORLD_HEIGHT - SCREEN_HEIGHT));
     }
 
-    boolean isColliding(int x, int y) {
-        if (x < 0 || y < 0 || x + PLAYER_SIZE > WORLD_WIDTH || y + PLAYER_SIZE > WORLD_HEIGHT) return true;
-        int[] checkX = {x + 5, x + PLAYER_SIZE - 5};
-        int[] checkY = {y + PLAYER_SIZE / 2, y + PLAYER_SIZE - 1};
-        for (int px : checkX) {
-            for (int py : checkY) {
-                int pixel = collisionMap.getRGB(px, py) & 0xFFFFFF;
-                if (pixel == 0x000000) return true; 
-            }
+    // Ensure isColliding ignores the green color
+    boolean isColliding(int nextX, int nextY) {
+    // 1. Map Boundary Check (Prevents "Out of Bounds" errors)
+    if (nextX < 0 || nextY < 0 || 
+        nextX + PLAYER_SIZE > WORLD_WIDTH || 
+        nextY + PLAYER_SIZE > WORLD_HEIGHT) return true;
+
+    // 2. NPC Collision Check
+    // We create a hitbox for the player's FEET only (bottom half)
+    Rectangle playerFeet = new Rectangle(nextX + 4, nextY + (PLAYER_SIZE / 2), PLAYER_SIZE - 8, PLAYER_SIZE / 2);
+
+    for (NPC npc : npcList) {
+        Rectangle npcFeet = new Rectangle(npc.x + 4, npc.y + (npc.size / 2), npc.size - 8, npc.size / 2);
+        if (playerFeet.intersects(npcFeet)) {
+            return true; 
         }
-        return false;
     }
 
-    @Override
-    protected void paintComponent(Graphics g) {
-        super.paintComponent(g);
-        Graphics2D g2 = (Graphics2D) g;
-        
-        if (currentState == GameState.OVERWORLD) {
-            if (worldMap == null) return;
+    // 3. COLLISION MAP CHECK (The Black Pixels)
+    // We check the corners of the player's "Feet" area on the collision map
+    int footLeft = nextX + 6;
+    int footRight = nextX + PLAYER_SIZE - 6;
+    int footTop = nextY + (PLAYER_SIZE / 2) + 4;
+    int footBottom = nextY + PLAYER_SIZE - 2;
 
-            int screenW = getWidth(); int screenH = getHeight();
-            int offsetX = 0; int offsetY = 0;
-            if (WORLD_WIDTH < screenW) offsetX = (screenW - WORLD_WIDTH) / 2;
-            if (WORLD_HEIGHT < screenH) offsetY = (screenH - WORLD_HEIGHT) / 2;
+    // Check 4 points around the feet to make sure the whole base is clear
+    int[] checkX = {footLeft, footRight};
+    int[] checkY = {footTop, footBottom};
 
-            g2.drawImage(worldMap, offsetX - cameraX, offsetY - cameraY, null);
+    for (int x : checkX) {
+        for (int y : checkY) {
+            // Safety check: make sure coordinates are inside the map image
+            if (x >= 0 && x < collisionMap.getWidth() && y >= 0 && y < collisionMap.getHeight()) {
+                
+                // Get the color and strip the Alpha (transparency)
+                int pixelColor = collisionMap.getRGB(x, y) & 0xFFFFFF;
 
-            for (NPC npc : npcList) {
-                int npcScreenX = npc.x - cameraX + offsetX;
-                int npcScreenY = npc.y - cameraY + offsetY;
-                if (npcScreenX + npc.size > 0 && npcScreenX < screenW && npcScreenY + npc.size > 0 && npcScreenY < screenH) {
-                    g2.drawImage(npc.sprite, npcScreenX, npcScreenY, null);
-                    g2.setColor(Color.WHITE);
-                    g2.drawString(npc.name, npcScreenX, npcScreenY - 5);
+                // 0x000000 is the Hex code for pure black
+                if (pixelColor == 0x000000) {
+                    return true; // Wall hit!
                 }
             }
+        }
+    }
 
-            BufferedImage sprite = switch (facing) {
-                case UP -> playerUp; case DOWN -> playerDown; case LEFT -> playerLeft; case RIGHT -> playerRight;
-            };
-            if (sprite != null) g2.drawImage(sprite, playerX - cameraX + offsetX, playerY - cameraY + offsetY, null);
+    return false; // No walls or NPCs hit!
+}
+
+
+    public void drawShadow(Graphics2D g2, int screenX, int screenY) {
+    g2.setColor(new Color(0, 0, 0, 60)); // Transparent black
+    // Draw an oval at the NPC's feet
+    g2.fillOval(screenX + 5, screenY + PLAYER_SIZE - 12, PLAYER_SIZE - 10, 10);
+    }
+    @Override
+protected void paintComponent(Graphics g) {
+    super.paintComponent(g);
+    if (worldMap == null) return;
+
+    Graphics2D g2 = (Graphics2D) g;
+
+    // --- 1. PREP WORK ---
+    int screenW = getWidth();
+    int screenH = getHeight();
+    int offsetX = (WORLD_WIDTH < screenW) ? (screenW - WORLD_WIDTH) / 2 : 0;
+    int offsetY = (WORLD_HEIGHT < screenH) ? (screenH - WORLD_HEIGHT) / 2 : 0;
+
+    // --- 2. DRAW MAP ---
+    g2.drawImage(worldMap, offsetX - cameraX, offsetY - cameraY, null);
+
+    // --- 3. DRAW NPCs & PLAYER (Y-Sorted) ---
+    
+    // This line sorts NPCs from top to bottom before drawing
+    npcList.sort((a, b) -> Integer.compare(a.y, b.y));
+    
+    boolean playerDrawn = false;
+
+    for (NPC npc : npcList) {
+        int npcScreenX = npc.x - cameraX + offsetX;
+        int npcScreenY = npc.y - cameraY + offsetY;
+
+        // DEPTH CHECK: If player is "further up" the map than this NPC, draw player first
+        if (!playerDrawn && (playerY + PLAYER_SIZE) < (npc.y + npc.size)) {
+            drawPlayer(g2, offsetX, offsetY);
+            playerDrawn = true;
+        }
+
+        // Draw NPC if on screen
+        if (npcScreenX + npc.size > 0 && npcScreenX < screenW && 
+            npcScreenY + npc.size > 0 && npcScreenY < screenH) {
             
         } else if (currentState == GameState.BATTLE) {
             g.setColor(Color.WHITE); g.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
             
-            // --- ENEMY STATS ---
-            g.setColor(Color.BLACK); g.setFont(new Font("Monospaced", Font.BOLD, 24));
-            g.drawString(currentEnemy.getName() + " Lv" + currentEnemy.getLevel(), 450, 80);
-            g.drawRect(450, 90, 200, 20);
-            g.setColor(Color.GREEN);
-            g.fillRect(450, 90, (int)((double)currentEnemy.getCurrentHp() / currentEnemy.getMaxHp() * 200), 20);
-            if (enemyPokemonImg != null) g.drawImage(enemyPokemonImg, 475, 120, null); 
-            
-            // --- PLAYER STATS ---
-            g.setColor(Color.BLACK);
-            g.drawString(myPokemon.getName() + " Lv" + myPokemon.getLevel(), 100, 300);
-            g.drawRect(100, 310, 200, 20);
-            g.setColor(Color.GREEN);
-            g.fillRect(100, 310, (int)((double)myPokemon.getCurrentHp() / myPokemon.getMaxHp() * 200), 20);
-            g.setColor(Color.BLACK);
-            g.drawString(myPokemon.getCurrentHp() + "/" + myPokemon.getMaxHp(), 100, 350);
-            if (playerPokemonImg != null) g.drawImage(playerPokemonImg, 125, 130, null);
-            
-            // --- BATTLE UI ---
-            if (currentBattleMenu == BattleMenu.POKEMON_MENU) {
-                g.setColor(new Color(240, 240, 240)); 
-                g.fillRect(50, 50, SCREEN_WIDTH - 100, SCREEN_HEIGHT - 100);
-                g.setColor(Color.BLACK);
-                g.drawRect(50, 50, SCREEN_WIDTH - 100, SCREEN_HEIGHT - 100);
-                
-                g.setFont(new Font("Monospaced", Font.BOLD, 24));
-                g.drawString("Choose a Pokémon:", 80, 100);
-                
-                for (int i = 0; i < playerParty.size(); i++) {
-                    Pokemon p = playerParty.get(i);
-                    int yPos = 160 + (i * 60);
-                    
-                    g.setColor(Color.BLACK);
-                    g.drawString(p.getName() + " Lv" + p.getLevel() + "  HP: " + p.getCurrentHp() + "/" + p.getMaxHp(), 120, yPos);
-                    
-                    if (p == myPokemon) {
-                        g.setColor(Color.BLUE);
-                        g.drawString("(ACTIVE)", 500, yPos);
-                    } else if (p.isFainted()) {
-                        g.setColor(Color.RED);
-                        g.drawString("(FAINTED)", 500, yPos);
-                    }
-                }
-                
-                g.setColor(Color.BLACK);
-                g.drawString(">", 90, 160 + (partyCursor * 60)); 
-                
-                g.setFont(new Font("Arial", Font.PLAIN, 16));
-                g.drawString("Press BACKSPACE to cancel.", 80, SCREEN_HEIGHT - 70);
-            } 
-            else {
-                g.drawRect(50, 400, SCREEN_WIDTH - 100, 150);
-                
-                if (currentBattleMenu == BattleMenu.MAIN) {
-                    g.drawString("What will " + myPokemon.getName() + " do?", 70, 450);
-                    g.drawRect(450, 400, 300, 150);
-                    g.drawString("FIGHT", 500, 450); g.drawString("BAG", 650, 450);
-                    g.drawString("POKEMON", 500, 500); g.drawString("RUN", 650, 500);
-                    
-                    int cursorX = (menuCursor % 2 == 0) ? 470 : 620;
-                    int cursorY = (menuCursor < 2) ? 450 : 500;
-                    g.drawString(">", cursorX, cursorY);
-                }
-                else if (currentBattleMenu == BattleMenu.FIGHT) {
-                    java.util.List<String> moves = myPokemon.getKnownMoves();
-                    for (int i = 0; i < moves.size(); i++) {
-                        int moveX = (i % 2 == 0) ? 100 : 350;
-                        int moveY = (i < 2) ? 450 : 500;
-                        g.drawString(moves.get(i), moveX, moveY);
-                    }
-                    int cursorX = (menuCursor % 2 == 0) ? 80 : 330;
-                    int cursorY = (menuCursor < 2) ? 450 : 500;
-                    if (menuCursor < moves.size()) g.drawString(">", cursorX, cursorY);
-                }
-                else { // MESSAGE MENUS
-                    g.drawString(battleMessage, 70, 450);
-                    g.setFont(new Font("Arial", Font.PLAIN, 16));
-                    g.drawString("Press ENTER to continue...", 70, 500);
-                }
-            }
+            // Name Tag Logic (Outlines & Centering)
+            g2.setFont(NPC_FONT);
+            FontMetrics metrics = g2.getFontMetrics(NPC_FONT);
+            int nameWidth = metrics.stringWidth(npc.name);
+            int centeredNameX = npcScreenX + (npc.size / 2) - (nameWidth / 2);
+            int nameY = npcScreenY - 8;
+
+            // Black Outline
+            g2.setColor(Color.BLACK);
+            g2.drawString(npc.name, centeredNameX + 1, nameY + 1);
+            g2.drawString(npc.name, centeredNameX - 1, nameY - 1);
+            g2.drawString(npc.name, centeredNameX + 1, nameY - 1);
+            g2.drawString(npc.name, centeredNameX - 1, nameY + 1);
+
+            // Main Color
+            g2.setColor(NPC_NAME_COLOR);
+            g2.drawString(npc.name, centeredNameX, nameY);
         }
     }
 
+    // SAFETY: If the player is the "lowest" thing on the map, draw them last
+    if (!playerDrawn) {
+        drawPlayer(g2, offsetX, offsetY);
+    }
+}
+
+// Helper method so we don't have to repeat the switch statement
+private void drawPlayer(Graphics2D g2, int offsetX, int offsetY) {
+    BufferedImage sprite = switch (facing) {
+        case UP -> playerUp;
+        case DOWN -> playerDown;
+        case LEFT -> playerLeft;
+        case RIGHT -> playerRight;
+    };
+    if (sprite != null) {
+        g2.drawImage(sprite, playerX - cameraX + offsetX, playerY - cameraY + offsetY, null);
+    }
+}
+
+    // Helper scaling methods (kept your logic)
     private BufferedImage scaleSquare(BufferedImage img, int size) {
         BufferedImage scaled = new BufferedImage(size, size, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g2 = scaled.createGraphics();

@@ -422,135 +422,136 @@ private boolean isAreaClear(int startX, int startY) {
             if (worldMap == null) return;
 
             int screenW = getWidth(); int screenH = getHeight();
-            int offsetX = 0; int offsetY = 0;
-            if (WORLD_WIDTH < screenW) offsetX = (screenW - WORLD_WIDTH) / 2;
-            if (WORLD_HEIGHT < screenH) offsetY = (screenH - WORLD_HEIGHT) / 2;
+            int offsetX = (WORLD_WIDTH < screenW) ? (screenW - WORLD_WIDTH) / 2 : 0;
+            int offsetY = (WORLD_HEIGHT < screenH) ? (screenH - WORLD_HEIGHT) / 2 : 0;
 
+            // 1. DRAW MAP
             g2.drawImage(worldMap, offsetX - cameraX, offsetY - cameraY, null);
 
+            // 2. SORT NPCS (Crucial for correct depth)
+            // This sorts them so NPCs higher on the screen are drawn first
+            npcList.sort((n1, n2) -> Integer.compare(n1.y + n1.size, n2.y + n2.size));
+
+            // 3. DRAW ENTITIES (Y-SORTED)
             boolean playerDrawn = false;
+            int playerFeetY = playerY + PLAYER_SIZE;
+
             for (NPC npc : npcList) {
+                int npcFeetY = npc.y + npc.size;
+
+                // If player's feet are higher (behind) this NPC's feet, draw player FIRST
+                if (!playerDrawn && playerFeetY < npcFeetY) {
+                    drawPlayer(g2, offsetX, offsetY);
+                    playerDrawn = true;
+                }
+
+                // Draw NPC
                 int npcScreenX = npc.x - cameraX + offsetX;
                 int npcScreenY = npc.y - cameraY + offsetY;
-                if (npcScreenX + npc.size > 0 && npcScreenX < screenW && npcScreenY + npc.size > 0 && npcScreenY < screenH) {
+                
+                if (npcScreenX + npc.size > 0 && npcScreenX < screenW && 
+                    npcScreenY + npc.size > 0 && npcScreenY < screenH) {
+                    
                     g2.drawImage(npc.sprite, npcScreenX, npcScreenY, null);
                     g2.setColor(Color.WHITE);
                     g2.drawString(npc.name, npcScreenX, npcScreenY - 5);
-                    if (!playerDrawn && (playerY + PLAYER_SIZE) < (npc.y + npc.size)) {
-                    drawPlayer(g2, offsetX, offsetY);
-                    playerDrawn = true;
-        }
                 }
             }
+
+            // 4. SAFETY DRAW
+            // If the player is the "closest" thing (bottom-most), draw them last
             if (!playerDrawn) {
                 drawPlayer(g2, offsetX, offsetY);
             }
 
-            BufferedImage sprite = switch (facing) {
-                case UP -> playerUp; case DOWN -> playerDown; case LEFT -> playerLeft; case RIGHT -> playerRight;
-            };
-            if (sprite != null) g2.drawImage(sprite, playerX - cameraX + offsetX, playerY - cameraY + offsetY, null);
+            // --- IMPORTANT: REMOVED THE REDUNDANT DRAWING BLOCK THAT WAS HERE ---
             
         } else if (currentState == GameState.BATTLE) {
             g.setColor(Color.WHITE); g.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
-            
-            // --- ENEMY STATS ---
-            g.setColor(Color.BLACK); g.setFont(new Font("Monospaced", Font.BOLD, 24));
-            g.drawString(currentEnemy.getName() + " Lv" + currentEnemy.getLevel(), 450, 80);
-            g.drawRect(450, 90, 200, 20);
-            g.setColor(Color.GREEN);
-            g.fillRect(450, 90, (int)((double)currentEnemy.getCurrentHp() / currentEnemy.getMaxHp() * 200), 20);
-            if (enemyPokemonImg != null) g.drawImage(enemyPokemonImg, 475, 120, null); 
-            
-            // --- PLAYER STATS ---
-            g.setColor(Color.BLACK);
-            g.drawString(myPokemon.getName() + " Lv" + myPokemon.getLevel(), 100, 300);
-            g.drawRect(100, 310, 200, 20);
-            g.setColor(Color.GREEN);
-            g.fillRect(100, 310, (int)((double)myPokemon.getCurrentHp() / myPokemon.getMaxHp() * 200), 20);
-            g.setColor(Color.BLACK);
-            g.drawString(myPokemon.getCurrentHp() + "/" + myPokemon.getMaxHp(), 100, 350);
-            if (playerPokemonImg != null) g.drawImage(playerPokemonImg, 125, 130, null);
-            
-            // --- BATTLE UI ---
-            if (currentBattleMenu == BattleMenu.POKEMON_MENU) {
-                g.setColor(new Color(240, 240, 240)); 
-                g.fillRect(50, 50, SCREEN_WIDTH - 100, SCREEN_HEIGHT - 100);
+                
+                // --- ENEMY STATS ---
+                g.setColor(Color.BLACK); g.setFont(new Font("Monospaced", Font.BOLD, 24));
+                g.drawString(currentEnemy.getName() + " Lv" + currentEnemy.getLevel(), 450, 80);
+                g.drawRect(450, 90, 200, 20);
+                g.setColor(Color.GREEN);
+                g.fillRect(450, 90, (int)((double)currentEnemy.getCurrentHp() / currentEnemy.getMaxHp() * 200), 20);
+                if (enemyPokemonImg != null) g.drawImage(enemyPokemonImg, 475, 120, null); 
+                
+                // --- PLAYER STATS ---
                 g.setColor(Color.BLACK);
-                g.drawRect(50, 50, SCREEN_WIDTH - 100, SCREEN_HEIGHT - 100);
+                g.drawString(myPokemon.getName() + " Lv" + myPokemon.getLevel(), 100, 300);
+                g.drawRect(100, 310, 200, 20);
+                g.setColor(Color.GREEN);
+                g.fillRect(100, 310, (int)((double)myPokemon.getCurrentHp() / myPokemon.getMaxHp() * 200), 20);
+                g.setColor(Color.BLACK);
+                g.drawString(myPokemon.getCurrentHp() + "/" + myPokemon.getMaxHp(), 100, 350);
+                if (playerPokemonImg != null) g.drawImage(playerPokemonImg, 125, 130, null);
                 
-                g.setFont(new Font("Monospaced", Font.BOLD, 24));
-                g.drawString("Choose a Pokémon:", 80, 100);
-                
-                for (int i = 0; i < playerParty.size(); i++) {
-                    Pokemon p = playerParty.get(i);
-                    int yPos = 160 + (i * 60);
+                // --- BATTLE UI ---
+                if (currentBattleMenu == BattleMenu.POKEMON_MENU) {
+                    g.setColor(new Color(240, 240, 240)); 
+                    g.fillRect(50, 50, SCREEN_WIDTH - 100, SCREEN_HEIGHT - 100);
+                    g.setColor(Color.BLACK);
+                    g.drawRect(50, 50, SCREEN_WIDTH - 100, SCREEN_HEIGHT - 100);
+                    
+                    g.setFont(new Font("Monospaced", Font.BOLD, 24));
+                    g.drawString("Choose a Pokémon:", 80, 100);
+                    
+                    for (int i = 0; i < playerParty.size(); i++) {
+                        Pokemon p = playerParty.get(i);
+                        int yPos = 160 + (i * 60);
+                        
+                        g.setColor(Color.BLACK);
+                        g.drawString(p.getName() + " Lv" + p.getLevel() + "  HP: " + p.getCurrentHp() + "/" + p.getMaxHp(), 120, yPos);
+                        
+                        if (p == myPokemon) {
+                            g.setColor(Color.BLUE);
+                            g.drawString("(ACTIVE)", 500, yPos);
+                        } else if (p.isFainted()) {
+                            g.setColor(Color.RED);
+                            g.drawString("(FAINTED)", 500, yPos);
+                        }
+                    }
                     
                     g.setColor(Color.BLACK);
-                    g.drawString(p.getName() + " Lv" + p.getLevel() + "  HP: " + p.getCurrentHp() + "/" + p.getMaxHp(), 120, yPos);
+                    g.drawString(">", 90, 160 + (partyCursor * 60)); 
                     
-                    if (p == myPokemon) {
-                        g.setColor(Color.BLUE);
-                        g.drawString("(ACTIVE)", 500, yPos);
-                    } else if (p.isFainted()) {
-                        g.setColor(Color.RED);
-                        g.drawString("(FAINTED)", 500, yPos);
-                    }
-                }
-                
-                g.setColor(Color.BLACK);
-                g.drawString(">", 90, 160 + (partyCursor * 60)); 
-                
-                g.setFont(new Font("Arial", Font.PLAIN, 16));
-                g.drawString("Press BACKSPACE to cancel.", 80, SCREEN_HEIGHT - 70);
-            } 
-            else {
-                g.drawRect(50, 400, SCREEN_WIDTH - 100, 150);
-                
-                if (currentBattleMenu == BattleMenu.MAIN) {
-                    g.drawString("What will " + myPokemon.getName() + " do?", 70, 450);
-                    g.drawRect(450, 400, 300, 150);
-                    g.drawString("FIGHT", 500, 450); g.drawString("BAG", 650, 450);
-                    g.drawString("POKEMON", 500, 500); g.drawString("RUN", 650, 500);
-                    
-                    int cursorX = (menuCursor % 2 == 0) ? 470 : 620;
-                    int cursorY = (menuCursor < 2) ? 450 : 500;
-                    g.drawString(">", cursorX, cursorY);
-                }
-                else if (currentBattleMenu == BattleMenu.FIGHT) {
-                    java.util.List<String> moves = myPokemon.getKnownMoves();
-                    for (int i = 0; i < moves.size(); i++) {
-                        int moveX = (i % 2 == 0) ? 100 : 350;
-                        int moveY = (i < 2) ? 450 : 500;
-                        g.drawString(moves.get(i), moveX, moveY);
-                    }
-                    int cursorX = (menuCursor % 2 == 0) ? 80 : 330;
-                    int cursorY = (menuCursor < 2) ? 450 : 500;
-                    if (menuCursor < moves.size()) g.drawString(">", cursorX, cursorY);
-                }
-                else { // MESSAGE MENUS
-                    g.drawString(battleMessage, 70, 450);
                     g.setFont(new Font("Arial", Font.PLAIN, 16));
-                    g.drawString("Press ENTER to continue...", 70, 500);
-                }
-            }
-        }
+                    g.drawString("Press BACKSPACE to cancel.", 80, SCREEN_HEIGHT - 70);
+                } 
+                else {
+                    g.drawRect(50, 400, SCREEN_WIDTH - 100, 150);
+                    
+                    if (currentBattleMenu == BattleMenu.MAIN) {
+                        g.drawString("What will " + myPokemon.getName() + " do?", 70, 450);
+                        g.drawRect(450, 400, 300, 150);
+                        g.drawString("FIGHT", 500, 450); g.drawString("BAG", 650, 450);
+                        g.drawString("POKEMON", 500, 500); g.drawString("RUN", 650, 500);
+                        
+                        int cursorX = (menuCursor % 2 == 0) ? 470 : 620;
+                        int cursorY = (menuCursor < 2) ? 450 : 500;
+                        g.drawString(">", cursorX, cursorY);
+                    }
+                    else if (currentBattleMenu == BattleMenu.FIGHT) {
+                        java.util.List<String> moves = myPokemon.getKnownMoves();
+                        for (int i = 0; i < moves.size(); i++) {
+                            int moveX = (i % 2 == 0) ? 100 : 350;
+                            int moveY = (i < 2) ? 450 : 500;
+                            g.drawString(moves.get(i), moveX, moveY);
+                        }
+                        int cursorX = (menuCursor % 2 == 0) ? 80 : 330;
+                        int cursorY = (menuCursor < 2) ? 450 : 500;
+                        if (menuCursor < moves.size()) g.drawString(">", cursorX, cursorY);
+                    }
+                    else { // MESSAGE MENUS
+                        g.drawString(battleMessage, 70, 450);
+                        g.setFont(new Font("Arial", Font.PLAIN, 16));
+                        g.drawString("Press ENTER to continue...", 70, 500);
+                    }
+                } 
     }
-
-// Separate helper for Battle so it doesn't clutter the Overworld logic
-private void drawBattleScreen(Graphics2D g2) {
-    g2.setColor(Color.WHITE);
-    g2.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
-    
-    g2.setColor(Color.BLACK);
-    g2.setFont(new Font("Arial", Font.BOLD, 20));
-    g2.drawString(battleMessage, 50, SCREEN_HEIGHT - 100);
-    
-    if (playerPokemonImg != null) g2.drawImage(playerPokemonImg, 50, 250, null);
-    if (enemyPokemonImg != null) g2.drawImage(enemyPokemonImg, 500, 50, null);
-    
-    // You can add your Battle Menu drawing logic here!
 }
+
 
 // Helper method so we don't have to repeat the switch statement
 private void drawPlayer(Graphics2D g2, int offsetX, int offsetY) {

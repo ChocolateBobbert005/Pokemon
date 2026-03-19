@@ -27,11 +27,15 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
     private enum GameState { OVERWORLD, BATTLE }
     private GameState currentState = GameState.OVERWORLD;
 
-    // ===== PLAYER =====
+    // ===== PLAYER & INVENTORY =====
     private int playerX, playerY;
     private final int PLAYER_SIZE = 35;
     private final int SPEED = 4;
     private int cameraX, cameraY;
+    
+    // Inventory items
+    private int pokeballs = 5;
+    private int potions = 1;
 
     private boolean up, down, left, right;
     private BufferedImage playerUp, playerDown, playerLeft, playerRight;
@@ -59,15 +63,23 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
     private BufferedImage playerPokemonImg;
     private BufferedImage enemyPokemonImg;
     
-    private enum BattleMenu { START_MESSAGE, MAIN, FIGHT, PLAYER_MESSAGE, ENEMY_MESSAGE, END_MESSAGE, CATCH_THROWN, CATCH_FAILED, POKEMON_MENU, SWAP_MESSAGE }
+    // Updated Enum for Catch Sequence and Bag
+    private enum BattleMenu { 
+        START_MESSAGE, MAIN, FIGHT, BAG, ITEM_MESSAGE, PLAYER_MESSAGE, 
+        ENEMY_MESSAGE, CRIT_MESSAGE, END_MESSAGE, 
+        SHAKE_1, SHAKE_2, SHAKE_3, CATCH_SUCCESS, CATCH_FAILED,
+        POKEMON_MENU, SWAP_MESSAGE 
+    }
     private BattleMenu currentBattleMenu = BattleMenu.MAIN;
     private int menuCursor = 0; 
     private int partyCursor = 0; 
     private String battleMessage = ""; 
+    private boolean lastHitWasCrit = false; 
+    private boolean isPlayerTurnAction = true; 
+    private int shakesEarned = 0; // Calculated when ball is thrown
 
-    // Font(Name, Style, Size)
     private final Font NPC_FONT = new Font("Dialog", Font.BOLD, 14);
-    private final Color NPC_NAME_COLOR = Color.GRAY; // Or new Color(255, 255, 0)
+
     class MapData {
         String worldPath, collisionPath;
         Color spawnColor;
@@ -85,7 +97,7 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
         addKeyListener(this);
 
         loadPlayerSprites();
-        loadPortalData("C:\\Users\\Lemkcar\\Documents\\GitCode\\Pokemon\\world.txt");
+        loadPortalData("C:\\Users\\WainBra\\Documents\\GitCode\\Pokemon\\world.txt");
         
         loadMap("T:\\HS\\Student\\Computer Science\\Software Engineering\\TeamSeniorSlackers\\Lph.png",
                 "T:\\HS\\Student\\Computer Science\\Software Engineering\\TeamSeniorSlackers\\LphC2.png");
@@ -122,43 +134,25 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
         }
     }
 
-    public void loadNPCsFromFile(String filePath) {
-        npcList.clear(); 
-        File file = new File(filePath);
-        if (!file.exists()) return;
-
-        try (BufferedReader br = new BufferedReader(new FileReader(file))) {
-            String line;
-            while ((line = br.readLine()) != null) {
-                line = line.trim();
-                if (line.isEmpty() || line.startsWith("#")) continue;
-
-                String[] data = line.split(",");
-                if (data.length < 4) continue;
-
-                String name = data[0].trim();
-                int worldX = Integer.parseInt(data[1].trim()) * SCALE;
-                int worldY = Integer.parseInt(data[2].trim()) * SCALE;
-                String spritePath = data[3].trim();
-
-                File spriteFile = new File(spritePath);
-                if (spriteFile.exists()) {
-                    BufferedImage rawSprite = ImageIO.read(spriteFile);
-                    BufferedImage scaledSprite = scaleSquare(rawSprite, PLAYER_SIZE);
-                    npcList.add(new NPC(name, worldX, worldY, PLAYER_SIZE, scaledSprite));
-                }
-            }
-        } catch (Exception e) { System.err.println("Error loading NPCs: " + e.getMessage()); }
+    private int calculateDamage(Pokemon attacker, Pokemon defender, int movePower) {
+        lastHitWasCrit = false; 
+        double baseDamage = ((((2.0 * attacker.getLevel() / 5.0) + 2.0) * movePower * ((double)attacker.getAttack() / defender.getDefense())) / 50.0) + 2.0;
+        double critMultiplier = 1.0;
+        if (Math.random() < 0.0625) { 
+            critMultiplier = 1.5; 
+            lastHitWasCrit = true;
+        }
+        double randomMultiplier = 0.85 + (Math.random() * 0.15);
+        int finalDamage = (int)(baseDamage * critMultiplier * randomMultiplier);
+        return Math.max(1, finalDamage);
     }
 
     void loadMap(String worldPath, String collisionPath) {
         try {
             BufferedImage rawWorld = ImageIO.read(new File(worldPath));
             BufferedImage rawColl = ImageIO.read(new File(collisionPath));
-
             worldMap = scaleMap(rawWorld, SCALE);
             collisionMap = scaleMap(rawColl, SCALE);
-
             WORLD_WIDTH = worldMap.getWidth();
             WORLD_HEIGHT = worldMap.getHeight();
         } catch (IOException e) {
@@ -167,38 +161,58 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
         refreshNPCs(worldPath);
     }
 
+    public void refreshNPCs(String currentMapPath) {
+        npcList.clear(); 
+        parseMasterNPCFile("npcs.txt", currentMapPath);
+    }
+
+    private void parseMasterNPCFile(String path, String filterMap) {
+        File file = new File(path);
+        if (!file.exists()) return;
+        try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                String[] data = line.split(",");
+                if (data.length < 5) continue;
+                String mapInFile = data[0].trim();
+                if (mapInFile.equalsIgnoreCase(filterMap)) {
+                    String name = data[1].trim();
+                    int x = Integer.parseInt(data[2].trim()) * SCALE;
+                    int y = Integer.parseInt(data[3].trim()) * SCALE;
+                    String sPath = data[4].trim();
+                    BufferedImage sprite = loadAndScaleNPCSprite(sPath);
+                    if (sprite != null) npcList.add(new NPC(name, x, y, PLAYER_SIZE, sprite));
+                }
+            }
+        } catch (Exception e) { System.err.println("NPC System Error: " + e.getMessage()); }
+    }
+
+    private BufferedImage loadAndScaleNPCSprite(String path) {
+        try {
+            BufferedImage img = ImageIO.read(new File(path));
+            return scaleSquare(img, PLAYER_SIZE);
+        } catch (Exception e) { return null; }
+    }
+
     private void checkGrassEncounter() {
         if (!(up || down || left || right)) return;
-
         int checkX = playerX + PLAYER_SIZE / 2;
         int checkY = playerY + PLAYER_SIZE - 5; 
-
         if (checkX < 0 || checkY < 0 || checkX >= WORLD_WIDTH || checkY >= WORLD_HEIGHT) return;
-
         int pixelColor = collisionMap.getRGB(checkX, checkY) & 0xFFFFFF;
-
         if (pixelColor == ENCOUNTER_COLOR) {
-            if (Math.random() < ENCOUNTER_CHANCE) {
-                triggerEncounter();
-            }
+            if (Math.random() < ENCOUNTER_CHANCE) triggerEncounter();
         }
     }
 
     private void triggerEncounter() {
         up = down = left = right = false; 
-        
         if (myPokemon.isFainted()) myPokemon.heal(myPokemon.getMaxHp());
-
         String[] possible = {"Pidgey", "Rattata", "Caterpie"};
         String enemyName = possible[(int)(Math.random() * possible.length)];
-        
-        // --- NEW: EASTER EGG ---
-        if (enemyName.equals("Caterpie")) {
-            enemyName = "CaterPIE";
-        }
+        if (enemyName.equals("Caterpie")) enemyName = "CaterPIE";
         
         currentEnemy = new Pokemon(enemyName, 3 + (int)(Math.random()*3));
-        
         playerPokemonImg = loadPokemonImage(myPokemon.getName());
         enemyPokemonImg = loadPokemonImage(currentEnemy.getName());
         
@@ -213,17 +227,33 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
         currentEnemy = null;
     }
     
-    private int calculateDamage(Pokemon attacker, Pokemon defender) {
-        int power = 40; 
-        double damage = (((2.0 * attacker.getLevel() / 5.0) + 2.0) * power * ((double)attacker.getAttack() / defender.getDefense())) / 50.0 + 2.0;
-        return (int) Math.max(1, damage);
-    }
-    
     private void enemyAttack() {
-        int damage = calculateDamage(currentEnemy, myPokemon);
+        isPlayerTurnAction = false; 
+        int damage = calculateDamage(currentEnemy, myPokemon, 40);
         myPokemon.takeDamage(damage);
-        battleMessage = "Enemy " + currentEnemy.getName() + " attacked!";
-        currentBattleMenu = BattleMenu.ENEMY_MESSAGE;
+        battleMessage = "Enemy " + currentEnemy.getName() + " used Tackle!";
+        if (lastHitWasCrit) currentBattleMenu = BattleMenu.CRIT_MESSAGE;
+        else currentBattleMenu = BattleMenu.ENEMY_MESSAGE;
+    }
+
+    // Authentic Catch Formula logic
+    private void tryCatchPokemon() {
+        double catchRate = 200; // Base rate for common wild pokemon
+        double ballMultiplier = 1.0; 
+        double a = (((3 * currentEnemy.getMaxHp() - 2 * currentEnemy.getCurrentHp()) * catchRate * ballMultiplier) / (3 * currentEnemy.getMaxHp()));
+        
+        if (a >= 255) {
+            shakesEarned = 4;
+        } else {
+            shakesEarned = 0;
+            double p = Math.pow(a / 255.0, 0.25);
+            for (int i = 0; i < 4; i++) {
+                if (Math.random() < p) shakesEarned++;
+                else break;
+            }
+        }
+        battleMessage = "You threw a Pokeball!";
+        currentBattleMenu = BattleMenu.ITEM_MESSAGE;
     }
 
     void findSpawnPoint(Color spawnColor) {
@@ -231,341 +261,167 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
         int mapW = collisionMap.getWidth();
         int mapH = collisionMap.getHeight();
         int targetRGB = spawnColor.getRGB() & 0xFFFFFF;
-
         for (int y = 0; y < mapH; y++) {
             for (int x = 0; x < mapW; x++) {
-                int pixel = collisionMap.getRGB(x, y) & 0xFFFFFF;
-                if (pixel == targetRGB) {
-                    for (int distance = 0; distance < 100; distance += 5) {
-                        int[][] offsets = {{0, distance}, {0, -distance}, {distance, 0}, {-distance, 0}};
-                        for (int[] offset : offsets) {
-                            int testX = x + offset[0] - PLAYER_SIZE / 2;
-                            int testY = y + offset[1] - PLAYER_SIZE / 2;
-                            if (isAreaClear(testX, testY)) {
-                                playerX = testX; playerY = testY; return; 
-                            }
-                        }
+                if ((collisionMap.getRGB(x, y) & 0xFFFFFF) == targetRGB) {
+                    if (isAreaClear(x - PLAYER_SIZE/2, y - PLAYER_SIZE/2)) {
+                        playerX = x - PLAYER_SIZE/2; playerY = y - PLAYER_SIZE/2; return;
                     }
                 }
             }
         }
-    // If no clear spot found near the marker, find the first available clear spot on the map
-    centerSpawnSafe();
+        centerSpawnSafe();
     }
 
-    /**
- * REFRESH NPCS
- * Call this single method whenever you want to update the room's occupants.
- */
-public void refreshNPCs(String currentMapPath) {
-    npcList.clear(); // Clear the stage
-    parseMasterNPCFile("npcs.txt", currentMapPath);
-}
-
-/**
- * MASTER FILE PARSER
- * Isolated logic to scan the big file and filter by map name.
- */
-private void parseMasterNPCFile(String path, String filterMap) {
-    File file = new File(path);
-    if (!file.exists()) return;
-
-    try (BufferedReader br = new BufferedReader(new FileReader(file))) {
-        String line;
-        while ((line = br.readLine()) != null) {
-            String[] data = line.split(",");
-            if (data.length < 5) continue;
-
-            String mapInFile = data[0].trim();
-            
-            // Only proceed if the NPC lives in the map we just entered
-            if (mapInFile.equalsIgnoreCase(filterMap)) {
-                String name = data[1].trim();
-                int x = Integer.parseInt(data[2].trim()) * SCALE;
-                int y = Integer.parseInt(data[3].trim()) * SCALE;
-                String spritePath = data[4].trim();
-
-                BufferedImage sprite = loadAndScaleNPCSprite(spritePath);
-                if (sprite != null) {
-                    npcList.add(new NPC(name, x, y, PLAYER_SIZE, sprite));
-                }
+    private boolean isAreaClear(int startX, int startY) {
+        if (startX < 0 || startY < 0 || startX + PLAYER_SIZE >= WORLD_WIDTH || startY + PLAYER_SIZE >= WORLD_HEIGHT) return false;
+        for (int yy = startY; yy < startY + PLAYER_SIZE; yy++) {
+            for (int xx = startX; xx < startX + PLAYER_SIZE; xx++) {
+                if ((collisionMap.getRGB(xx, yy) & 0xFFFFFF) == 0x000000) return false; 
             }
         }
-    } catch (Exception e) {
-        System.err.println("NPC System Error: " + e.getMessage());
+        return true; 
     }
-}
 
-/**
- * INDEPENDENT SCALER
- * Scales NPC sprites without touching your map scaling methods.
- */
-private BufferedImage loadAndScaleNPCSprite(String path) {
-    try {
-        BufferedImage img = ImageIO.read(new File(path));
-        BufferedImage scaled = new BufferedImage(PLAYER_SIZE, PLAYER_SIZE, BufferedImage.TYPE_INT_ARGB);
-        Graphics2D g2 = scaled.createGraphics();
-        
-        // Use Nearest Neighbor to keep the pixel art sharp
-        g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
-        g2.drawImage(img, 0, 0, PLAYER_SIZE, PLAYER_SIZE, null);
-        g2.dispose();
-        
-        return scaled;
-    } catch (Exception e) {
-        return null; 
-    }
-    }
-    
+    void centerSpawnSafe() { playerX = WORLD_WIDTH / 2; playerY = WORLD_HEIGHT / 2; }
 
-/**
- * Returns true if the 35x35 area starting at (startX, startY) 
- * contains NO black pixels (0x000000).
- */
-private boolean isAreaClear(int startX, int startY) {
-    if (startX < 0 || startY < 0 || startX + PLAYER_SIZE >= WORLD_WIDTH || startY + PLAYER_SIZE >= WORLD_HEIGHT) return false;
-    for (int yy = startY; yy < startY + PLAYER_SIZE; yy++) {
-        for (int xx = startX; xx < startX + PLAYER_SIZE; xx++) {
-            int pixel = collisionMap.getRGB(xx, yy) & 0xFFFFFF;
-            if (pixel == 0x000000) return false; 
-        }
-    }
-    return true; 
-}
-
-    void centerSpawnSafe() { playerX = WORLD_WIDTH / 2; playerY = WORLD_HEIGHT / 2+PLAYER_SIZE; }
-
-   // Inside update()
     void update() {
-    int nextX = playerX;
-    int nextY = playerY;
-
+        if (currentState == GameState.BATTLE) return;
+        int nextX = playerX;
+        int nextY = playerY;
         if (up)    { nextY -= SPEED; facing = Direction.UP; }
         if (down)  { nextY += SPEED; facing = Direction.DOWN; }
         if (left)  { nextX -= SPEED; facing = Direction.LEFT; }
         if (right) { nextX += SPEED; facing = Direction.RIGHT; }
-
         if (!isColliding(nextX, playerY)) playerX = nextX;
         if (!isColliding(playerX, nextY)) playerY = nextY;
-
         checkMapTransition();
         checkGrassEncounter();
-
         cameraX = playerX - SCREEN_WIDTH / 2 + PLAYER_SIZE / 2;
         cameraY = playerY - SCREEN_HEIGHT / 2 + PLAYER_SIZE / 2;
         cameraX = Math.max(0, Math.min(cameraX, WORLD_WIDTH - SCREEN_WIDTH));
         cameraY = Math.max(0, Math.min(cameraY, WORLD_HEIGHT - SCREEN_HEIGHT));
     }
 
-    // Ensure isColliding ignores the green color
     boolean isColliding(int nextX, int nextY) {
-    // 1. Map Boundary Check (Prevents "Out of Bounds" errors)
-    if (nextX < 0 || nextY < 0 || 
-        nextX + PLAYER_SIZE > WORLD_WIDTH || 
-        nextY + PLAYER_SIZE > WORLD_HEIGHT) return true;
-
-    // 2. NPC Collision Check
-    // We create a hitbox for the player's FEET only (bottom half)
-    Rectangle playerFeet = new Rectangle(nextX + 4, nextY + (PLAYER_SIZE / 2), PLAYER_SIZE - 8, PLAYER_SIZE / 2);
-    
-
-    for (NPC npc : npcList) {
-        Rectangle npcFeet = new Rectangle(npc.x + 4, npc.y + (npc.size / 2), npc.size - 8, npc.size / 2);
-        if (playerFeet.intersects(npcFeet)) {
-            return true; 
+        if (nextX < 0 || nextY < 0 || nextX + PLAYER_SIZE > WORLD_WIDTH || nextY + PLAYER_SIZE > WORLD_HEIGHT) return true;
+        Rectangle playerFeet = new Rectangle(nextX + 4, nextY + (PLAYER_SIZE / 2), PLAYER_SIZE - 8, PLAYER_SIZE / 2);
+        for (NPC npc : npcList) {
+            Rectangle npcFeet = new Rectangle(npc.x + 4, npc.y + (npc.size / 2), npc.size - 8, npc.size / 2);
+            if (playerFeet.intersects(npcFeet)) return true;
         }
-    }
-
-
-    // 3. COLLISION MAP CHECK (The Black Pixels)
-    // We check the corners of the player's "Feet" area on the collision map
-    int footLeft = nextX + 6;
-    int footRight = nextX + PLAYER_SIZE - 6;
-    int footTop = nextY + (PLAYER_SIZE / 2) + 4;
-    int footBottom = nextY + PLAYER_SIZE - 2;
-
-    // Check 4 points around the feet to make sure the whole base is clear
-    int[] checkX = {footLeft, footRight};
-    int[] checkY = {footTop, footBottom};
-
-    for (int x : checkX) {
-        for (int y : checkY) {
-            // Safety check: make sure coordinates are inside the map image
-            if (x >= 0 && x < collisionMap.getWidth() && y >= 0 && y < collisionMap.getHeight()) {
-                
-                // Get the color and strip the Alpha (transparency)
-                int pixelColor = collisionMap.getRGB(x, y) & 0xFFFFFF;
-
-                // 0x000000 is the Hex code for pure black
-                if (pixelColor == 0x000000) {
-                    return true; // Wall hit!
-                }
+        int[] checkX = {nextX + 6, nextX + PLAYER_SIZE - 6};
+        int[] checkY = {nextY + (PLAYER_SIZE / 2) + 4, nextY + PLAYER_SIZE - 2};
+        for (int x : checkX) {
+            for (int y : checkY) {
+                if ((collisionMap.getRGB(x, y) & 0xFFFFFF) == 0x000000) return true;
             }
         }
+        return false;
     }
 
-    return false; // No walls or NPCs hit!
-}
-
-
-    public void drawShadow(Graphics2D g2, int screenX, int screenY) {
-    g2.setColor(new Color(0, 0, 0, 60)); // Transparent black
-    // Draw an oval at the NPC's feet
-    g2.fillOval(screenX + 5, screenY + PLAYER_SIZE - 12, PLAYER_SIZE - 10, 10);
-    }
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
         Graphics2D g2 = (Graphics2D) g;
-        
         if (currentState == GameState.OVERWORLD) {
             if (worldMap == null) return;
-
-            int screenW = getWidth(); int screenH = getHeight();
-            int offsetX = 0; int offsetY = 0;
-            if (WORLD_WIDTH < screenW) offsetX = (screenW - WORLD_WIDTH) / 2;
-            if (WORLD_HEIGHT < screenH) offsetY = (screenH - WORLD_HEIGHT) / 2;
-
+            int offsetX = (WORLD_WIDTH < getWidth()) ? (getWidth() - WORLD_WIDTH) / 2 : 0;
+            int offsetY = (WORLD_HEIGHT < getHeight()) ? (getHeight() - WORLD_HEIGHT) / 2 : 0;
             g2.drawImage(worldMap, offsetX - cameraX, offsetY - cameraY, null);
-
             boolean playerDrawn = false;
             for (NPC npc : npcList) {
                 int npcScreenX = npc.x - cameraX + offsetX;
                 int npcScreenY = npc.y - cameraY + offsetY;
-                if (npcScreenX + npc.size > 0 && npcScreenX < screenW && npcScreenY + npc.size > 0 && npcScreenY < screenH) {
-                    g2.drawImage(npc.sprite, npcScreenX, npcScreenY, null);
-                    g2.setColor(Color.WHITE);
-                    g2.drawString(npc.name, npcScreenX, npcScreenY - 5);
-                    if (!playerDrawn && (playerY + PLAYER_SIZE) < (npc.y + npc.size)) {
+                if (!playerDrawn && (playerY + PLAYER_SIZE) < (npc.y + npc.size)) {
                     drawPlayer(g2, offsetX, offsetY);
                     playerDrawn = true;
-        }
                 }
+                g2.drawImage(npc.sprite, npcScreenX, npcScreenY, null);
+                g2.setColor(Color.WHITE);
+                g2.setFont(NPC_FONT);
+                g2.drawString(npc.name, npcScreenX, npcScreenY - 5);
             }
-            if (!playerDrawn) {
-                drawPlayer(g2, offsetX, offsetY);
-            }
-
-            BufferedImage sprite = switch (facing) {
-                case UP -> playerUp; case DOWN -> playerDown; case LEFT -> playerLeft; case RIGHT -> playerRight;
-            };
-            if (sprite != null) g2.drawImage(sprite, playerX - cameraX + offsetX, playerY - cameraY + offsetY, null);
-            
+            if (!playerDrawn) drawPlayer(g2, offsetX, offsetY);
         } else if (currentState == GameState.BATTLE) {
-            g.setColor(Color.WHITE); g.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
-            
-            // --- ENEMY STATS ---
-            g.setColor(Color.BLACK); g.setFont(new Font("Monospaced", Font.BOLD, 24));
-            g.drawString(currentEnemy.getName() + " Lv" + currentEnemy.getLevel(), 450, 80);
-            g.drawRect(450, 90, 200, 20);
-            g.setColor(Color.GREEN);
-            g.fillRect(450, 90, (int)((double)currentEnemy.getCurrentHp() / currentEnemy.getMaxHp() * 200), 20);
-            if (enemyPokemonImg != null) g.drawImage(enemyPokemonImg, 475, 120, null); 
-            
-            // --- PLAYER STATS ---
-            g.setColor(Color.BLACK);
-            g.drawString(myPokemon.getName() + " Lv" + myPokemon.getLevel(), 100, 300);
-            g.drawRect(100, 310, 200, 20);
-            g.setColor(Color.GREEN);
-            g.fillRect(100, 310, (int)((double)myPokemon.getCurrentHp() / myPokemon.getMaxHp() * 200), 20);
-            g.setColor(Color.BLACK);
-            g.drawString(myPokemon.getCurrentHp() + "/" + myPokemon.getMaxHp(), 100, 350);
-            if (playerPokemonImg != null) g.drawImage(playerPokemonImg, 125, 130, null);
-            
-            // --- BATTLE UI ---
-            if (currentBattleMenu == BattleMenu.POKEMON_MENU) {
-                g.setColor(new Color(240, 240, 240)); 
-                g.fillRect(50, 50, SCREEN_WIDTH - 100, SCREEN_HEIGHT - 100);
-                g.setColor(Color.BLACK);
-                g.drawRect(50, 50, SCREEN_WIDTH - 100, SCREEN_HEIGHT - 100);
-                
-                g.setFont(new Font("Monospaced", Font.BOLD, 24));
-                g.drawString("Choose a Pokémon:", 80, 100);
-                
-                for (int i = 0; i < playerParty.size(); i++) {
-                    Pokemon p = playerParty.get(i);
-                    int yPos = 160 + (i * 60);
-                    
-                    g.setColor(Color.BLACK);
-                    g.drawString(p.getName() + " Lv" + p.getLevel() + "  HP: " + p.getCurrentHp() + "/" + p.getMaxHp(), 120, yPos);
-                    
-                    if (p == myPokemon) {
-                        g.setColor(Color.BLUE);
-                        g.drawString("(ACTIVE)", 500, yPos);
-                    } else if (p.isFainted()) {
-                        g.setColor(Color.RED);
-                        g.drawString("(FAINTED)", 500, yPos);
-                    }
-                }
-                
-                g.setColor(Color.BLACK);
-                g.drawString(">", 90, 160 + (partyCursor * 60)); 
-                
-                g.setFont(new Font("Arial", Font.PLAIN, 16));
-                g.drawString("Press BACKSPACE to cancel.", 80, SCREEN_HEIGHT - 70);
-            } 
-            else {
-                g.drawRect(50, 400, SCREEN_WIDTH - 100, 150);
-                
-                if (currentBattleMenu == BattleMenu.MAIN) {
-                    g.drawString("What will " + myPokemon.getName() + " do?", 70, 450);
-                    g.drawRect(450, 400, 300, 150);
-                    g.drawString("FIGHT", 500, 450); g.drawString("BAG", 650, 450);
-                    g.drawString("POKEMON", 500, 500); g.drawString("RUN", 650, 500);
-                    
-                    int cursorX = (menuCursor % 2 == 0) ? 470 : 620;
-                    int cursorY = (menuCursor < 2) ? 450 : 500;
-                    g.drawString(">", cursorX, cursorY);
-                }
-                else if (currentBattleMenu == BattleMenu.FIGHT) {
-                    java.util.List<String> moves = myPokemon.getKnownMoves();
-                    for (int i = 0; i < moves.size(); i++) {
-                        int moveX = (i % 2 == 0) ? 100 : 350;
-                        int moveY = (i < 2) ? 450 : 500;
-                        g.drawString(moves.get(i), moveX, moveY);
-                    }
-                    int cursorX = (menuCursor % 2 == 0) ? 80 : 330;
-                    int cursorY = (menuCursor < 2) ? 450 : 500;
-                    if (menuCursor < moves.size()) g.drawString(">", cursorX, cursorY);
-                }
-                else { // MESSAGE MENUS
-                    g.drawString(battleMessage, 70, 450);
-                    g.setFont(new Font("Arial", Font.PLAIN, 16));
-                    g.drawString("Press ENTER to continue...", 70, 500);
-                }
-            }
+            drawBattleUI(g);
         }
     }
 
-// Separate helper for Battle so it doesn't clutter the Overworld logic
-private void drawBattleScreen(Graphics2D g2) {
-    g2.setColor(Color.WHITE);
-    g2.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
-    
-    g2.setColor(Color.BLACK);
-    g2.setFont(new Font("Arial", Font.BOLD, 20));
-    g2.drawString(battleMessage, 50, SCREEN_HEIGHT - 100);
-    
-    if (playerPokemonImg != null) g2.drawImage(playerPokemonImg, 50, 250, null);
-    if (enemyPokemonImg != null) g2.drawImage(enemyPokemonImg, 500, 50, null);
-    
-    // You can add your Battle Menu drawing logic here!
-}
-
-// Helper method so we don't have to repeat the switch statement
-private void drawPlayer(Graphics2D g2, int offsetX, int offsetY) {
-    BufferedImage sprite = switch (facing) {
-        case UP -> playerUp;
-        case DOWN -> playerDown;
-        case LEFT -> playerLeft;
-        case RIGHT -> playerRight;
-    };
-    if (sprite != null) {
-        g2.drawImage(sprite, playerX - cameraX + offsetX, playerY - cameraY + offsetY, null);
+    private void drawPlayer(Graphics2D g2, int offsetX, int offsetY) {
+        BufferedImage sprite = switch (facing) {
+            case UP -> playerUp; case DOWN -> playerDown; case LEFT -> playerLeft; case RIGHT -> playerRight;
+        };
+        if (sprite != null) g2.drawImage(sprite, playerX - cameraX + offsetX, playerY - cameraY + offsetY, null);
     }
-}
 
-    // Helper scaling methods (kept your logic)
+    private void drawBattleUI(Graphics g) {
+        g.setColor(Color.WHITE); g.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+        g.setColor(Color.BLACK); g.setFont(new Font("Monospaced", Font.BOLD, 24));
+        
+        // Enemy Stats
+        g.drawString(currentEnemy.getName() + " Lv" + currentEnemy.getLevel(), 450, 80);
+        g.drawRect(450, 90, 200, 20);
+        g.setColor(Color.GREEN);
+        g.fillRect(450, 90, (int)((double)currentEnemy.getCurrentHp() / currentEnemy.getMaxHp() * 200), 20);
+        if (enemyPokemonImg != null) g.drawImage(enemyPokemonImg, 475, 120, null); 
+        
+        // Player Stats
+        g.setColor(Color.BLACK);
+        g.drawString(myPokemon.getName() + " Lv" + myPokemon.getLevel(), 100, 300);
+        g.drawRect(100, 310, 200, 20);
+        g.setColor(Color.GREEN);
+        g.fillRect(100, 310, (int)((double)myPokemon.getCurrentHp() / myPokemon.getMaxHp() * 200), 20);
+        g.setColor(Color.BLACK);
+        g.drawString(myPokemon.getCurrentHp() + "/" + myPokemon.getMaxHp(), 100, 350);
+        if (playerPokemonImg != null) g.drawImage(playerPokemonImg, 125, 130, null);
+
+        // Menus
+        g.drawRect(50, 400, SCREEN_WIDTH - 100, 150);
+        if (currentBattleMenu == BattleMenu.MAIN) {
+            g.drawString("What will " + myPokemon.getName() + " do?", 70, 450);
+            g.drawRect(450, 400, 300, 150);
+            g.drawString("FIGHT", 500, 450); g.drawString("BAG", 650, 450);
+            g.drawString("POKEMON", 500, 500); g.drawString("RUN", 650, 500);
+            int cursorX = (menuCursor % 2 == 0) ? 470 : 620;
+            int cursorY = (menuCursor < 2) ? 450 : 500;
+            g.drawString(">", cursorX, cursorY);
+        } else if (currentBattleMenu == BattleMenu.FIGHT) {
+            java.util.List<String> moves = myPokemon.getKnownMoves();
+            for (int i = 0; i < moves.size(); i++) {
+                int moveX = (i % 2 == 0) ? 100 : 350;
+                int moveY = (i < 2) ? 450 : 500;
+                g.drawString(moves.get(i), moveX, moveY);
+            }
+            int cursorX = (menuCursor % 2 == 0) ? 80 : 330;
+            int cursorY = (menuCursor < 2) ? 450 : 500;
+            g.drawString(">", cursorX, cursorY);
+        } else if (currentBattleMenu == BattleMenu.BAG) {
+            g.drawString("POTION   x" + potions, 100, 450);
+            g.drawString("POKEBALL x" + pokeballs, 100, 500);
+            int cursorY = (menuCursor == 0) ? 450 : 500;
+            g.drawString(">", 70, cursorY);
+        } else if (currentBattleMenu == BattleMenu.POKEMON_MENU) {
+            drawPartyMenu(g);
+        } else {
+            g.drawString(battleMessage, 70, 450);
+            g.setFont(new Font("Arial", Font.PLAIN, 16));
+            g.drawString("Press ENTER...", 70, 500);
+        }
+    }
+
+    private void drawPartyMenu(Graphics g) {
+        g.setColor(new Color(240, 240, 240)); 
+        g.fillRect(50, 50, SCREEN_WIDTH - 100, SCREEN_HEIGHT - 100);
+        g.setColor(Color.BLACK);
+        g.drawRect(50, 50, SCREEN_WIDTH - 100, SCREEN_HEIGHT - 100);
+        for (int i = 0; i < playerParty.size(); i++) {
+            Pokemon p = playerParty.get(i);
+            g.drawString(p.getName() + " Lv" + p.getLevel() + " HP: " + p.getCurrentHp(), 120, 160 + (i * 60));
+        }
+        g.drawString(">", 90, 160 + (partyCursor * 60)); 
+    }
+
     private BufferedImage scaleSquare(BufferedImage img, int size) {
         BufferedImage scaled = new BufferedImage(size, size, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g2 = scaled.createGraphics();
@@ -599,10 +455,8 @@ private void drawPlayer(Graphics2D g2, int offsetX, int offsetY) {
     void checkMapTransition() {
         long now = System.currentTimeMillis();
         if (now - lastTransitionTime < TRANSITION_COOLDOWN) return;
-
         int cx = playerX + PLAYER_SIZE / 2; int cy = playerY + PLAYER_SIZE / 2;
         if (cx < 0 || cy < 0 || cx >= WORLD_WIDTH || cy >= WORLD_HEIGHT) return;
-
         int key = collisionMap.getRGB(cx, cy) & 0xFFFFFF;
         if (portalMap.containsKey(key | 0xFF000000)) { 
             MapData data = portalMap.get(key | 0xFF000000);
@@ -620,117 +474,92 @@ private void drawPlayer(Graphics2D g2, int offsetX, int offsetY) {
             if(e.getKeyCode() == KeyEvent.VK_S) down = true;
             if(e.getKeyCode() == KeyEvent.VK_A) left = true;
             if(e.getKeyCode() == KeyEvent.VK_D) right = true;
-        } 
-        else if (currentState == GameState.BATTLE) {
-            
-            if (currentBattleMenu == BattleMenu.MAIN || currentBattleMenu == BattleMenu.FIGHT) {
-                if (e.getKeyCode() == KeyEvent.VK_W || e.getKeyCode() == KeyEvent.VK_UP) { if (menuCursor >= 2) menuCursor -= 2; }
-                if (e.getKeyCode() == KeyEvent.VK_S || e.getKeyCode() == KeyEvent.VK_DOWN) { if (menuCursor <= 1) menuCursor += 2; }
-                if (e.getKeyCode() == KeyEvent.VK_A || e.getKeyCode() == KeyEvent.VK_LEFT) { if (menuCursor % 2 != 0) menuCursor -= 1; }
-                if (e.getKeyCode() == KeyEvent.VK_D || e.getKeyCode() == KeyEvent.VK_RIGHT) { if (menuCursor % 2 == 0) menuCursor += 1; }
-            }
-            else if (currentBattleMenu == BattleMenu.POKEMON_MENU) {
-                if (e.getKeyCode() == KeyEvent.VK_W || e.getKeyCode() == KeyEvent.VK_UP) { 
-                    if (partyCursor > 0) partyCursor--; 
-                }
-                if (e.getKeyCode() == KeyEvent.VK_S || e.getKeyCode() == KeyEvent.VK_DOWN) { 
-                    if (partyCursor < playerParty.size() - 1) partyCursor++; 
-                }
-            }
-
-            if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-                if (currentBattleMenu == BattleMenu.START_MESSAGE) {
-                    currentBattleMenu = BattleMenu.MAIN;
-                }
-                else if (currentBattleMenu == BattleMenu.MAIN) {
-                    if (menuCursor == 0) { 
-                        currentBattleMenu = BattleMenu.FIGHT; menuCursor = 0; 
-                    } 
-                    else if (menuCursor == 1) { 
-                        battleMessage = "You threw a Pokéball!";
-                        currentBattleMenu = BattleMenu.CATCH_THROWN;
-                    }
-                    else if (menuCursor == 2) {
-                        currentBattleMenu = BattleMenu.POKEMON_MENU;
-                        partyCursor = 0;
-                    }
-                    else if (menuCursor == 3) endBattle(); // RUN
-                } 
-                else if (currentBattleMenu == BattleMenu.POKEMON_MENU) {
-                    Pokemon selected = playerParty.get(partyCursor);
-                    
-                    if (selected == myPokemon) {
-                        // Already active
-                    } else if (selected.isFainted()) {
-                        // Fainted
-                    } else {
-                        myPokemon = selected;
-                        playerPokemonImg = loadPokemonImage(myPokemon.getName()); 
-                        battleMessage = "Go! " + myPokemon.getName() + "!";
-                        currentBattleMenu = BattleMenu.SWAP_MESSAGE; 
-                    }
-                }
-                else if (currentBattleMenu == BattleMenu.SWAP_MESSAGE) {
-                    enemyAttack(); 
-                }
-                else if (currentBattleMenu == BattleMenu.FIGHT) {
-                    if (menuCursor < myPokemon.getKnownMoves().size()) {
-                        String moveName = myPokemon.getKnownMoves().get(menuCursor);
-                        int damage = calculateDamage(myPokemon, currentEnemy);
-                        currentEnemy.takeDamage(damage);
-                        battleMessage = myPokemon.getName() + " used " + moveName + "!";
-                        currentBattleMenu = BattleMenu.PLAYER_MESSAGE; 
-                    }
-                } 
-                else if (currentBattleMenu == BattleMenu.PLAYER_MESSAGE) {
-                    if (currentEnemy.isFainted()) {
-                        battleMessage = "Enemy " + currentEnemy.getName() + " fainted!";
-                        currentBattleMenu = BattleMenu.END_MESSAGE;
-                    } else enemyAttack();
-                }
-                else if (currentBattleMenu == BattleMenu.CATCH_THROWN) {
-                    double hpPercent = (double) currentEnemy.getCurrentHp() / currentEnemy.getMaxHp();
-                    double catchChance = 0.7 - (hpPercent * 0.5); 
-                    
-                    if (Math.random() < catchChance) {
-                        battleMessage = "Gotcha! " + currentEnemy.getName() + " was caught!";
-                        if (playerParty.size() < 6) {
-                            playerParty.add(currentEnemy);
-                        } else {
-                            System.out.println(currentEnemy.getName() + " was sent to the PC! (Not yet implemented)");
-                        }
-                        currentBattleMenu = BattleMenu.END_MESSAGE;
-                    } else {
-                        battleMessage = "Oh no! It broke free!";
-                        currentBattleMenu = BattleMenu.CATCH_FAILED;
-                    }
-                }
-                else if (currentBattleMenu == BattleMenu.CATCH_FAILED) {
-                    enemyAttack(); 
-                }
-                else if (currentBattleMenu == BattleMenu.ENEMY_MESSAGE) {
-                    if (myPokemon.isFainted()) {
-                        battleMessage = myPokemon.getName() + " fainted!";
-                        currentBattleMenu = BattleMenu.END_MESSAGE;
-                    } else { 
-                        currentBattleMenu = BattleMenu.MAIN; menuCursor = 0; 
-                    }
-                }
-                else if (currentBattleMenu == BattleMenu.END_MESSAGE) {
-                    if (myPokemon.isFainted()) { 
-                        for (Pokemon p : playerParty) p.heal(p.getMaxHp()); 
-                        centerSpawnSafe(); 
-                    }
-                    endBattle();
-                }
-            }
-            
-            if (e.getKeyCode() == KeyEvent.VK_BACK_SPACE) {
-                if (currentBattleMenu == BattleMenu.FIGHT || currentBattleMenu == BattleMenu.POKEMON_MENU) {
-                    currentBattleMenu = BattleMenu.MAIN; menuCursor = 0;
-                }
-            }
+        } else if (currentState == GameState.BATTLE) {
+            handleBattleInput(e);
         }
+    }
+
+    private void handleBattleInput(KeyEvent e) {
+        int code = e.getKeyCode();
+        if (currentBattleMenu == BattleMenu.MAIN || currentBattleMenu == BattleMenu.FIGHT) {
+            if (code == KeyEvent.VK_W || code == KeyEvent.VK_UP) { if (menuCursor >= 2) menuCursor -= 2; }
+            if (code == KeyEvent.VK_S || code == KeyEvent.VK_DOWN) { if (menuCursor <= 1) menuCursor += 2; }
+            if (code == KeyEvent.VK_A || code == KeyEvent.VK_LEFT) { if (menuCursor % 2 != 0) menuCursor -= 1; }
+            if (code == KeyEvent.VK_D || code == KeyEvent.VK_RIGHT) { if (menuCursor % 2 == 0) menuCursor += 1; }
+        } else if (currentBattleMenu == BattleMenu.BAG) {
+            if (code == KeyEvent.VK_W || code == KeyEvent.VK_UP) menuCursor = 0;
+            if (code == KeyEvent.VK_S || code == KeyEvent.VK_DOWN) menuCursor = 1;
+        } else if (currentBattleMenu == BattleMenu.POKEMON_MENU) {
+            if (code == KeyEvent.VK_W || code == KeyEvent.VK_UP) if (partyCursor > 0) partyCursor--;
+            if (code == KeyEvent.VK_S || code == KeyEvent.VK_DOWN) if (partyCursor < playerParty.size() - 1) partyCursor++;
+        }
+
+        if (code == KeyEvent.VK_ENTER) {
+            // Sequence for the 3 Shakes
+            if (currentBattleMenu == BattleMenu.ITEM_MESSAGE) {
+                if (battleMessage.contains("Pokeball")) {
+                    currentBattleMenu = BattleMenu.SHAKE_1; battleMessage = ". . .";
+                } else enemyAttack();
+            }
+            else if (currentBattleMenu == BattleMenu.SHAKE_1) {
+                if (shakesEarned >= 1) { currentBattleMenu = BattleMenu.SHAKE_2; battleMessage = ". . . Shake!"; }
+                else { currentBattleMenu = BattleMenu.CATCH_FAILED; battleMessage = "Oh no! The Pokemon broke free!"; }
+            }
+            else if (currentBattleMenu == BattleMenu.SHAKE_2) {
+                if (shakesEarned >= 2) { currentBattleMenu = BattleMenu.SHAKE_3; battleMessage = ". . . Shake!!"; }
+                else { currentBattleMenu = BattleMenu.CATCH_FAILED; battleMessage = "Aww! It appeared to be caught!"; }
+            }
+            else if (currentBattleMenu == BattleMenu.SHAKE_3) {
+                if (shakesEarned >= 3) { currentBattleMenu = BattleMenu.CATCH_SUCCESS; battleMessage = ". . . Shake!!!"; }
+                else { currentBattleMenu = BattleMenu.CATCH_FAILED; battleMessage = "Arrgh! Almost had it!"; }
+            }
+            else if (currentBattleMenu == BattleMenu.CATCH_SUCCESS) {
+                if (shakesEarned == 4) {
+                    battleMessage = "Gotcha! " + currentEnemy.getName() + " was caught!";
+                    if (playerParty.size() < 6) playerParty.add(currentEnemy);
+                    currentBattleMenu = BattleMenu.END_MESSAGE;
+                } else {
+                    battleMessage = "Shoot! It was so close!"; currentBattleMenu = BattleMenu.CATCH_FAILED;
+                }
+            }
+            else if (currentBattleMenu == BattleMenu.CATCH_FAILED) enemyAttack();
+            else if (currentBattleMenu == BattleMenu.START_MESSAGE) currentBattleMenu = BattleMenu.MAIN;
+            else if (currentBattleMenu == BattleMenu.MAIN) {
+                if (menuCursor == 0) { currentBattleMenu = BattleMenu.FIGHT; menuCursor = 0; }
+                else if (menuCursor == 1) { currentBattleMenu = BattleMenu.BAG; menuCursor = 0; }
+                else if (menuCursor == 2) { currentBattleMenu = BattleMenu.POKEMON_MENU; partyCursor = 0; }
+                else if (menuCursor == 3) endBattle();
+            } 
+            else if (currentBattleMenu == BattleMenu.BAG) {
+                if (menuCursor == 0 && potions > 0) {
+                    potions--; myPokemon.heal(myPokemon.getMaxHp());
+                    battleMessage = "Used Potion! " + myPokemon.getName() + " fully healed!";
+                    currentBattleMenu = BattleMenu.ITEM_MESSAGE;
+                } else if (menuCursor == 1 && pokeballs > 0) {
+                    pokeballs--; tryCatchPokemon();
+                }
+            }
+            else if (currentBattleMenu == BattleMenu.FIGHT) {
+                isPlayerTurnAction = true; 
+                currentEnemy.takeDamage(calculateDamage(myPokemon, currentEnemy, 40));
+                battleMessage = myPokemon.getName() + " used " + myPokemon.getKnownMoves().get(menuCursor) + "!";
+                currentBattleMenu = lastHitWasCrit ? BattleMenu.CRIT_MESSAGE : BattleMenu.PLAYER_MESSAGE;
+            } 
+            else if (currentBattleMenu == BattleMenu.CRIT_MESSAGE) {
+                battleMessage = "A critical hit!";
+                currentBattleMenu = isPlayerTurnAction ? BattleMenu.PLAYER_MESSAGE : BattleMenu.ENEMY_MESSAGE;
+            }
+            else if (currentBattleMenu == BattleMenu.PLAYER_MESSAGE) {
+                if (currentEnemy.isFainted()) { battleMessage = "Enemy fainted!"; currentBattleMenu = BattleMenu.END_MESSAGE; }
+                else enemyAttack();
+            } 
+            else if (currentBattleMenu == BattleMenu.ENEMY_MESSAGE) {
+                if (myPokemon.isFainted()) { battleMessage = myPokemon.getName() + " fainted!"; currentBattleMenu = BattleMenu.END_MESSAGE; }
+                else currentBattleMenu = BattleMenu.MAIN;
+            } 
+            else if (currentBattleMenu == BattleMenu.END_MESSAGE) endBattle();
+        }
+        if (code == KeyEvent.VK_BACK_SPACE) currentBattleMenu = BattleMenu.MAIN;
     }
     
     @Override public void keyReleased(KeyEvent e) {
@@ -739,6 +568,5 @@ private void drawPlayer(Graphics2D g2, int offsetX, int offsetY) {
         if(e.getKeyCode() == KeyEvent.VK_A) left = false;
         if(e.getKeyCode() == KeyEvent.VK_D) right = false;
     }
-    
     @Override public void keyTyped(KeyEvent e) {}
 }

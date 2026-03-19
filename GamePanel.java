@@ -97,7 +97,7 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
         addKeyListener(this);
 
         loadPlayerSprites();
-        loadPortalData("C:\\Users\\WainBra\\Documents\\GitCode\\Pokemon\\world.txt");
+        loadPortalData("C:\\Users\\Lemkcar\\Documents\\GitCode\\Pokemon\\world.txt");
         
         loadMap("T:\\HS\\Student\\Computer Science\\Software Engineering\\TeamSeniorSlackers\\Lph.png",
                 "T:\\HS\\Student\\Computer Science\\Software Engineering\\TeamSeniorSlackers\\LphC2.png");
@@ -261,16 +261,26 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
         int mapW = collisionMap.getWidth();
         int mapH = collisionMap.getHeight();
         int targetRGB = spawnColor.getRGB() & 0xFFFFFF;
+
         for (int y = 0; y < mapH; y++) {
             for (int x = 0; x < mapW; x++) {
-                if ((collisionMap.getRGB(x, y) & 0xFFFFFF) == targetRGB) {
-                    if (isAreaClear(x - PLAYER_SIZE/2, y - PLAYER_SIZE/2)) {
-                        playerX = x - PLAYER_SIZE/2; playerY = y - PLAYER_SIZE/2; return;
+                int pixel = collisionMap.getRGB(x, y) & 0xFFFFFF;
+                if (pixel == targetRGB) {
+                    for (int distance = 0; distance < 100; distance += 5) {
+                        int[][] offsets = {{0, distance}, {0, -distance}, {distance, 0}, {-distance, 0}};
+                        for (int[] offset : offsets) {
+                            int testX = x + offset[0] - PLAYER_SIZE / 2;
+                            int testY = y + offset[1] - PLAYER_SIZE / 2;
+                            if (isAreaClear(testX, testY)) {
+                                playerX = testX; playerY = testY; return; 
+                            }
+                        }
                     }
                 }
             }
         }
-        centerSpawnSafe();
+    // If no clear spot found near the marker, find the first available clear spot on the map
+    centerSpawnSafe();
     }
 
     private boolean isAreaClear(int startX, int startY) {

@@ -5,6 +5,7 @@ import java.awt.image.BufferedImage;
 import javax.imageio.ImageIO;
 import java.io.*;
 import java.util.HashMap;
+import java.util.Scanner;
 import java.util.ArrayList;
 
 public class GamePanel extends JPanel implements KeyListener, ActionListener {
@@ -419,6 +420,7 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
             g.drawString("Press ENTER...", 70, 500);
         }
     }
+}
 
     private void drawPartyMenu(Graphics g) {
         g.setColor(new Color(240, 240, 240)); 
@@ -479,7 +481,9 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
     @Override public void actionPerformed(ActionEvent e) { update(); repaint(); }
     
     @Override public void keyPressed(KeyEvent e) {
+        
         if (currentState == GameState.OVERWORLD) {
+            int code = e.getKeyCode();
             if(e.getKeyCode() == KeyEvent.VK_W) up = true;
             if(e.getKeyCode() == KeyEvent.VK_S) down = true;
             if(e.getKeyCode() == KeyEvent.VK_A) left = true;

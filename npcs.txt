@@ -1,1 +1,1 @@
-T:\HS\Student\Computer Science\Software Engineering\TeamSeniorSlackers\Oakint.png,Professor Oak,102,78,T:\HS\Student\Computer Science\Software Engineering\TeamSeniorSlackers\boy_down.png
+T:\HS\Student\Computer Science\Software Engineering\TeamSeniorSlackers\Oakint.png,TRAINER,Brock,T:\HS\Student\Computer Science\Software Engineering\TeamSeniorSlackers\boy_down.png,104, 91,hello world

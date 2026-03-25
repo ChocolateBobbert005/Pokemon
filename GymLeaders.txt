@@ -1,0 +1,8 @@
+Brock, Boulder, TM39, Geodude, 12, Onix, 14
+Misty, Cascade, TM03, Staryu, 18, Starmie, 21
+Lt. Surge, Thunder, TM34, Voltorb, 21, Pikachu, 18, Raichu, 24
+Erika, Rainbow, TM19, Victreebel, 29, Tangela, 24, Vileplume, 29
+Koga, Soul, TM06, Koffing, 37, Muk, 39, Koffing, 37, Weezing, 43
+Sabrina, Marsh, TM04, Kadabra, 38, Mr. Mime, 37, Venomoth, 38, Alakazam, 43
+Blaine, Volcano, TM38, Growlithe, 42, Ponyta, 40, Rapidash, 42, Arcanine, 47
+Giovanni, Earth, TM26, Rhyhorn, 45, Dugtrio, 42, Nidoqueen, 44, Nidoking, 45, Rhyhorn, 50

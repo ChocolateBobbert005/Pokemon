@@ -7,6 +7,7 @@ import java.io.*;
 import java.util.HashMap;
 import java.util.Scanner;
 import java.util.ArrayList;
+import java.util.List;
 
 public class GamePanel extends JPanel implements KeyListener, ActionListener {
 
@@ -65,6 +66,7 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
     private int menuCursor = 0; 
     private int partyCursor = 0; 
     private String battleMessage = ""; 
+    private List<Pokemon> currentTrainerParty;
 
     // Font(Name, Style, Size)
     class MapData {
@@ -695,7 +697,56 @@ private void drawPlayer(Graphics2D g2, int offsetX, int offsetY) {
             lastTransitionTime = now;
         }
     }
+    private void triggerTrainerBattle(NPC trainer) {
+    up = down = left = right = false; 
+    if (myPokemon.isFainted()) myPokemon.heal(myPokemon.getMaxHp());
+    
+    currentTrainerParty = new ArrayList<>();
+    String targetName = trainer.name; // Assuming your NPC class has a 'name' field
+    
+    // 1. Read the text file and find the trainer
+    try (BufferedReader br = new BufferedReader(new FileReader("GymLeaders.txt"))) {
+        String line;
+        while ((line = br.readLine()) != null) {
+            String[] parts = line.split(",");
+            
+            // If we found the right trainer in the file
+            if (parts[0].trim().equalsIgnoreCase(targetName)) {
+                
+                // parts[1] is Badge ("Boulder"), parts[2] is TM ("TM39")
+                // Pokemon data starts at index 3. We loop by 2 to grab Name and Level pairs.
+                for (int i = 3; i < parts.length - 1; i += 2) {
+                    String pName = parts[i].trim();
+                    int pLevel = Integer.parseInt(parts[i+1].trim());
+                    currentTrainerParty.add(new Pokemon(pName, pLevel));
+                }
+                break; // Stop reading the file once we found our trainer
+            }
+        }
+    } catch (Exception e) {
+        System.out.println("Error loading trainer party: " + e.getMessage());
+        return; // Aborts the battle if the file is missing or broken
+    }
+    
+    // Safety check just in case the trainer had no Pokemon in the file
+    if (currentTrainerParty.isEmpty()) {
+        System.out.println("No Pokemon found for " + targetName + "!");
+        return;
+    }
 
+    // 2. Set the current enemy to their first Pokemon
+    currentEnemy = currentTrainerParty.get(0);
+    
+    // 3. Load Images
+    playerPokemonImg = loadPokemonImage(myPokemon.getName());
+    enemyPokemonImg = loadPokemonImage(currentEnemy.getName());
+    
+    // 4. Set Battle Variables
+    battleMessage = targetName + " wants to battle!";
+    currentBattleMenu = BattleMenu.START_MESSAGE;
+    menuCursor = 0;
+    currentState = GameState.BATTLE; 
+}
     @Override public void actionPerformed(ActionEvent e) { update(); repaint(); }
     
     @Override public void keyPressed(KeyEvent e) {
@@ -715,7 +766,8 @@ private void drawPlayer(Graphics2D g2, int offsetX, int offsetY) {
                     double dist = Math.sqrt(Math.pow(playerX - npc.x, 2) + Math.pow(playerY - npc.y, 2));
             
                     if (dist < 64) {
-                        startTrainerBattle(npc);
+                        System.out.println("predded");
+                        triggerTrainerBattle(npc);
                         break; 
                 }
         }

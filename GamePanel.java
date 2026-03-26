@@ -50,7 +50,7 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
 
     // ===== ENCOUNTER SETTINGS =====
     private final int ENCOUNTER_COLOR = new Color(57, 148, 49).getRGB() & 0xFFFFFF;
-    private final double ENCOUNTER_CHANCE = 0.09; 
+    private final double ENCOUNTER_CHANCE = 0.05; 
     
     // ===== BATTLE VARIABLES =====
     private final String SPRITE_PATH = "T:\\HS\\Student\\Computer Science\\Software Engineering\\Pokemon Sprites\\";

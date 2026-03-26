@@ -1,3 +1,4 @@
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -61,7 +62,7 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
     private BufferedImage playerPokemonImg;
     private BufferedImage enemyPokemonImg;
     
-    private enum BattleMenu { START_MESSAGE, MAIN, FIGHT, PLAYER_MESSAGE, ENEMY_MESSAGE, END_MESSAGE, CATCH_THROWN, CATCH_FAILED, POKEMON_MENU, SWAP_MESSAGE }
+    private enum BattleMenu { START_MESSAGE, MAIN, FIGHT, BAG_MENU,  PLAYER_MESSAGE, ENEMY_MESSAGE, END_MESSAGE, CATCH_THROWN, CATCH_FAILED, POKEMON_MENU, SWAP_MESSAGE }
     private BattleMenu currentBattleMenu = BattleMenu.MAIN;
     private int menuCursor = 0; 
     private int partyCursor = 0; 
@@ -86,7 +87,7 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
         addKeyListener(this);
 
         loadPlayerSprites();
-        loadPortalData("C:\\Users\\Lemkcar\\Documents\\GitCode\\Pokemon\\world.txt");
+        loadPortalData("C:\\Users\\WainBra\\Documents\\GitCode\\Pokemon\\world.txt");
         
         loadMap("T:\\HS\\Student\\Computer Science\\Software Engineering\\TeamSeniorSlackers\\Lph.png",
                 "T:\\HS\\Student\\Computer Science\\Software Engineering\\TeamSeniorSlackers\\LphC2.png");
@@ -95,6 +96,9 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
         
         myPokemon = new Pokemon("Charmander", 5);
         playerParty.add(myPokemon);
+        // --- ADD THESE LINES TO FIX SWITCHING ---
+        playerParty.add(new Pokemon("Squirtle", 5));
+        playerParty.add(new Pokemon("Bulbasaur", 5));
         
         timer.start();
     }
@@ -223,18 +227,30 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
         currentEnemy = null;
     }
     
-    private int calculateDamage(Pokemon attacker, Pokemon defender) {
-        int power = 40; 
-        double damage = (((2.0 * attacker.getLevel() / 5.0) + 2.0) * power * ((double)attacker.getAttack() / defender.getDefense())) / 50.0 + 2.0;
-        return (int) Math.max(1, damage);
-    }
+    private int calculateDamage(Pokemon attacker, Pokemon defender, Move move) {
+    // If the move exists in the database, use its power. Otherwise, default to 40 (like Struggle).
+    int power = (move != null) ? move.getBasePower() : 40; 
     
-    private void enemyAttack() {
-        int damage = calculateDamage(currentEnemy, myPokemon);
-        myPokemon.takeDamage(damage);
-        battleMessage = "Enemy " + currentEnemy.getName() + " attacked!";
-        currentBattleMenu = BattleMenu.ENEMY_MESSAGE;
+    double damage = (((2.0 * attacker.getLevel() / 5.0) + 2.0) * power * ((double)attacker.getAttack() / defender.getDefense())) / 50.0 + 2.0;
+    
+    return (int) Math.max(1, damage); // Always do at least 1 damage
     }
+    private void enemyAttack() {
+    // 1. Pick a random move from the enemy's known moves
+    java.util.List<String> moves = currentEnemy.getKnownMoves();
+    String moveName = moves.get((int)(Math.random() * moves.size()));
+    
+    // 2. Look up the move in the database
+    Move selectedMove = Move.moveDatabase.get(moveName);
+    
+    // 3. Calculate and apply damage
+    int damage = calculateDamage(currentEnemy, myPokemon, selectedMove);
+    myPokemon.takeDamage(damage);
+    
+    // 4. Update the UI
+    battleMessage = "Enemy " + currentEnemy.getName() + " used " + moveName + "!";
+    currentBattleMenu = BattleMenu.ENEMY_MESSAGE;
+}
 
     void findSpawnPoint(Color spawnColor) {
         if (collisionMap == null) { centerSpawnSafe(); return; }
@@ -598,6 +614,16 @@ protected void paintComponent(Graphics g) {
                 int cursorY = (menuCursor < 2) ? 450 : 500;
                 if (menuCursor < moves.size()) g.drawString(">", cursorX, cursorY);
             }
+            else if (currentBattleMenu == BattleMenu.BAG_MENU) {
+    g.drawString("Items:", 70, 450);
+    g.drawRect(450, 400, 300, 150);
+    g.drawString("Pokéball", 500, 450); 
+    g.drawString("Potion", 500, 500);
+
+    // Re-use menuCursor for moving up and down the list
+    int cursorY = (menuCursor == 0) ? 450 : 500;
+    g.drawString(">", 470, cursorY);
+}
             else { 
                 g.drawString(battleMessage, 70, 450);
                 g.setFont(new Font("Arial", Font.PLAIN, 16));
@@ -774,8 +800,9 @@ private void drawPlayer(Graphics2D g2, int offsetX, int offsetY) {
     }
 }
         } 
-        else if (currentState == GameState.BATTLE) {
+       else if (currentState == GameState.BATTLE) {
             
+            // --- 1. MENU NAVIGATION (W/A/S/D / Arrows) ---
             if (currentBattleMenu == BattleMenu.MAIN || currentBattleMenu == BattleMenu.FIGHT) {
                 if (e.getKeyCode() == KeyEvent.VK_W || e.getKeyCode() == KeyEvent.VK_UP) { if (menuCursor >= 2) menuCursor -= 2; }
                 if (e.getKeyCode() == KeyEvent.VK_S || e.getKeyCode() == KeyEvent.VK_DOWN) { if (menuCursor <= 1) menuCursor += 2; }
@@ -790,7 +817,12 @@ private void drawPlayer(Graphics2D g2, int offsetX, int offsetY) {
                     if (partyCursor < playerParty.size() - 1) partyCursor++; 
                 }
             }
+            else if (currentBattleMenu == BattleMenu.BAG_MENU) {
+                if (e.getKeyCode() == KeyEvent.VK_W || e.getKeyCode() == KeyEvent.VK_UP) { menuCursor = 0; }
+                if (e.getKeyCode() == KeyEvent.VK_S || e.getKeyCode() == KeyEvent.VK_DOWN) { menuCursor = 1; }
+            }
 
+            // --- 2. ENTER KEY LOGIC ---
             if (e.getKeyCode() == KeyEvent.VK_ENTER) {
                 if (currentBattleMenu == BattleMenu.START_MESSAGE) {
                     currentBattleMenu = BattleMenu.MAIN;
@@ -800,8 +832,9 @@ private void drawPlayer(Graphics2D g2, int offsetX, int offsetY) {
                         currentBattleMenu = BattleMenu.FIGHT; menuCursor = 0; 
                     } 
                     else if (menuCursor == 1) { 
-                        battleMessage = "You threw a Pokéball!";
-                        currentBattleMenu = BattleMenu.CATCH_THROWN;
+                        // Open the Bag!
+                        currentBattleMenu = BattleMenu.BAG_MENU;
+                        menuCursor = 0;
                     }
                     else if (menuCursor == 2) {
                         currentBattleMenu = BattleMenu.POKEMON_MENU;
@@ -809,6 +842,17 @@ private void drawPlayer(Graphics2D g2, int offsetX, int offsetY) {
                     }
                     else if (menuCursor == 3) endBattle(); // RUN
                 } 
+                else if (currentBattleMenu == BattleMenu.BAG_MENU) {
+                    if (menuCursor == 0) { // Pokéball
+                        battleMessage = "You threw a Pokéball!";
+                        currentBattleMenu = BattleMenu.CATCH_THROWN;
+                    } 
+                    else if (menuCursor == 1) { // Potion
+                        myPokemon.heal(20);
+                        battleMessage = "You used a Potion! " + myPokemon.getName() + " healed!";
+                        currentBattleMenu = BattleMenu.SWAP_MESSAGE; 
+                    }
+                }
                 else if (currentBattleMenu == BattleMenu.POKEMON_MENU) {
                     Pokemon selected = playerParty.get(partyCursor);
                     
@@ -829,7 +873,11 @@ private void drawPlayer(Graphics2D g2, int offsetX, int offsetY) {
                 else if (currentBattleMenu == BattleMenu.FIGHT) {
                     if (menuCursor < myPokemon.getKnownMoves().size()) {
                         String moveName = myPokemon.getKnownMoves().get(menuCursor);
-                        int damage = calculateDamage(myPokemon, currentEnemy);
+                        
+                        // NEW Move calculation logic!
+                        Move selectedMove = Move.moveDatabase.get(moveName);
+                        int damage = calculateDamage(myPokemon, currentEnemy, selectedMove);
+                        
                         currentEnemy.takeDamage(damage);
                         battleMessage = myPokemon.getName() + " used " + moveName + "!";
                         currentBattleMenu = BattleMenu.PLAYER_MESSAGE; 
@@ -841,25 +889,58 @@ private void drawPlayer(Graphics2D g2, int offsetX, int offsetY) {
                         currentBattleMenu = BattleMenu.END_MESSAGE;
                     } else enemyAttack();
                 }
+            
                 else if (currentBattleMenu == BattleMenu.CATCH_THROWN) {
-                    double hpPercent = (double) currentEnemy.getCurrentHp() / currentEnemy.getMaxHp();
-                    double catchChance = 0.7 - (hpPercent * 0.5); 
+                    int hpMax = currentEnemy.getMaxHp();
+                    int hpCurrent = currentEnemy.getCurrentHp();
+                    int catchRate = currentEnemy.getCatchRate();
                     
-                    if (Math.random() < catchChance) {
+                    // The EXACT Gen 3/4 Math Formula
+                    double a = ((3.0 * hpMax - 2.0 * hpCurrent) * catchRate * 1.0) / (3.0 * hpMax) * 1.0;
+
+                    boolean caught = false;
+                    int shakesPassed = 0;
+
+                    if (a >= 255) {
+                        caught = true;
+                    } else {
+                        double b = 65536.0 * Math.pow(a / 255.0, 0.25);
+                        for (int i = 0; i < 4; i++) {
+                            if ((Math.random() * 65536) < b) {
+                                shakesPassed++;
+                            }
+                        }
+                        if (shakesPassed == 4) caught = true;
+                    }
+
+                    if (caught) {
                         battleMessage = "Gotcha! " + currentEnemy.getName() + " was caught!";
                         if (playerParty.size() < 6) {
                             playerParty.add(currentEnemy);
                         } else {
-                            System.out.println(currentEnemy.getName() + " was sent to the PC! (Not yet implemented)");
+                            System.out.println(currentEnemy.getName() + " was sent to the PC!");
                         }
                         currentBattleMenu = BattleMenu.END_MESSAGE;
                     } else {
-                        battleMessage = "Oh no! It broke free!";
+                        if (shakesPassed == 0) battleMessage = "Oh no! The Pokémon broke free!";
+                        else if (shakesPassed == 1) battleMessage = "Aww! It appeared to be caught!";
+                        else if (shakesPassed == 2) battleMessage = "Aargh! Almost had it!";
+                        else battleMessage = "Shoot! It was so close too!";
+                        
                         currentBattleMenu = BattleMenu.CATCH_FAILED;
                     }
                 }
                 else if (currentBattleMenu == BattleMenu.CATCH_FAILED) {
-                    enemyAttack(); 
+                    enemyAttack(); // The missing link! Enemy attacks if catch fails.
+                }
+
+                else if (currentBattleMenu == BattleMenu.ENEMY_MESSAGE) {
+                    if (myPokemon.isFainted()) {
+                        battleMessage = myPokemon.getName() + " fainted!";
+                        currentBattleMenu = BattleMenu.END_MESSAGE;
+                    } else { 
+                        currentBattleMenu = BattleMenu.MAIN; menuCursor = 0; 
+                    }
                 }
                 else if (currentBattleMenu == BattleMenu.ENEMY_MESSAGE) {
                     if (myPokemon.isFainted()) {
@@ -875,6 +956,14 @@ private void drawPlayer(Graphics2D g2, int offsetX, int offsetY) {
                         centerSpawnSafe(); 
                     }
                     endBattle();
+                }
+            }
+            
+            // --- 3. BACKSPACE LOGIC ---
+            if (e.getKeyCode() == KeyEvent.VK_BACK_SPACE) {
+                // Now supports backing out of the BAG_MENU
+                if (currentBattleMenu == BattleMenu.FIGHT || currentBattleMenu == BattleMenu.POKEMON_MENU || currentBattleMenu == BattleMenu.BAG_MENU) {
+                    currentBattleMenu = BattleMenu.MAIN; menuCursor = 0;
                 }
             }
             

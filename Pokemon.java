@@ -9,6 +9,9 @@ public class Pokemon {
     private int[] base; // base stats
     private String nature;
     
+    // --- NEW: Catch Rate for the official formula ---
+    private int catchRate;
+    
     // Temporary list so the Battle UI has moves to display!
     private List<String> knownMoves;
 
@@ -16,15 +19,6 @@ public class Pokemon {
         this.name = name;
         this.level = level;
         this.knownMoves = new ArrayList<>(Arrays.asList("Tackle", "Scratch")); // Temp moves
-
-        // INITIALIZE THE OTHER ATTRIBUTES
-        // (Assuming PokeDex exists in your project to provide this)
-        // PokeStats ps = PokeDex.getStats(name);
-        // if (ps != null) {
-        //     type1 = ps.getType1();
-        //     type2 = ps.getType2();
-        //     base = ps.getBase();
-        // }
 
         // Give them some temporary base stats if the PokeDex isn't fully linked yet
         if (base == null) base = new int[]{45, 49, 49, 65, 65, 45}; 
@@ -36,6 +30,9 @@ public class Pokemon {
         // Simplified Attack/Defense for the battle math
         this.att = ((2 * base[1] * level) / 100) + 5;
         this.def = ((2 * base[2] * level) / 100) + 5;
+        
+        // --- NEW: Set default catch rate (255 is the easiest, like a Pidgey or Caterpie) ---
+        this.catchRate = 255; 
     }
 
     // ===== BATTLE METHODS =====
@@ -63,4 +60,7 @@ public class Pokemon {
     public String getType1() { return type1; }
     public String getType2() { return type2; }
     public List<String> getKnownMoves() { return knownMoves; }
+    
+    // --- NEW: Getter for the Catch Rate ---
+    public int getCatchRate() { return catchRate; }
 }

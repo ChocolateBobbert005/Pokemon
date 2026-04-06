@@ -5,12 +5,16 @@ public class Game {
 
         JFrame frame = new JFrame("Pokemon");
         GamePanel panel = new GamePanel();
+        StartScreen start = new StartScreen(frame); 
+        
+        frame.add(start); 
 
-        frame.add(panel);
         frame.pack();
 
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
+
+        start.requestFocusInWindow();
     }
 }

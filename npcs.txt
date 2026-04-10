@@ -1,1 +1,5 @@
+<<<<<<< HEAD
 T:\HS\Student\Computer Science\Software Engineering\TeamSeniorSlackers\BrocksGym.png,TRAINER,Brock,T:\HS\Student\Computer Science\Software Engineering\TeamSeniorSlackers\boy_down.png,104, 91,hello world
+=======
+T:\HS\Student\Computer Science\Software Engineering\TeamSeniorSlackers\BrocksGym.png,TRAINER,Brock,T:\HS\Student\Computer Science\Software Engineering\TeamSeniorSlackers\boy_down.png,103,90,hello world
+>>>>>>> 90068891e123ce305f867693614b2cba248a7446

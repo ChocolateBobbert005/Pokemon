@@ -1,10 +1,9 @@
-
 import javax.swing.*;
 import java.awt.*;
+import java.io.*;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import javax.imageio.ImageIO;
-import java.io.*;
 import java.util.HashMap;
 import java.util.Scanner;
 import java.util.ArrayList;
@@ -37,7 +36,7 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
     private int cameraX, cameraY;
 
     private boolean up, down, left, right;
-    private BufferedImage playerUp, playerDown, playerLeft, playerRight, playerUp1, playerUp2, playerDown1, playerDown2, playerLeft1, playerLeft2, playerRight1, playerRight2;
+    private BufferedImage playerUp, playerDown, playerLeft, playerRight;
 
     // ===== GAME LOOP =====
     private final Timer timer = new Timer(16, this);
@@ -68,11 +67,10 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
     private int partyCursor = 0; 
     private String battleMessage = ""; 
     private List<Pokemon> currentTrainerParty;
+    public String currentMapPath = "T:\\HS\\Student\\Computer Science\\Software Engineering\\TeamSeniorSlackers\\PalletTown.png";
+    public String currentCollisionPath = "T:\\HS\\Student\\Computer Science\\Software Engineering\\TeamSeniorSlackers\\PalletTownCollision.png";
 
-    // In your Player class or GamePanel
-    private BufferedImage activeSprite; 
-    private int spriteCounter = 0;
-    private int spriteNum = 1;
+    
 
     // Font(Name, Style, Size)
     class MapData {
@@ -90,9 +88,10 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
         setBackground(Color.BLACK);
         setFocusable(true);
         addKeyListener(this);
+    
 
         loadPlayerSprites();
-        loadPortalData("C:\\Users\\LemkCar\\Documents\\GitCode\\Pokemon\\world.txt");
+        loadPortalData("C:\\Users\\WainBra\\Documents\\GitCode\\Pokemon\\world.txt");
         
         loadMap("T:\\HS\\Student\\Computer Science\\Software Engineering\\TeamSeniorSlackers\\Lph.png",
                 "T:\\HS\\Student\\Computer Science\\Software Engineering\\TeamSeniorSlackers\\LphC2.png");
@@ -115,15 +114,6 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
             playerDown = scaleSquare(ImageIO.read(new File(path + "boy_down.png")), PLAYER_SIZE);
             playerLeft = scaleSquare(ImageIO.read(new File(path + "boy_left.png")), PLAYER_SIZE);
             playerRight = scaleSquare(ImageIO.read(new File(path + "boy_right.png")), PLAYER_SIZE);
-            playerDown1 = scaleSquare(ImageIO.read(new File(path + "BoyWalkDown1.png")), PLAYER_SIZE);
-            playerDown2 = scaleSquare(ImageIO.read(new File(path + "BoyWalkDown2.png")), PLAYER_SIZE);
-            playerUp1 = scaleSquare(ImageIO.read(new File(path + "BoyWalkUp1.png")), PLAYER_SIZE);
-            playerUp2 = scaleSquare(ImageIO.read(new File(path + "BoyWalkUp2.png")), PLAYER_SIZE);
-            playerLeft1 = scaleSquare(ImageIO.read(new File(path + "BoyWalkLeft1.png")), PLAYER_SIZE);
-            playerLeft2 = scaleSquare(ImageIO.read(new File(path + "BoyWalkLeft2.png")), PLAYER_SIZE);
-            playerRight1 = scaleSquare(ImageIO.read(new File(path + "BoyWalkRight1.png")), PLAYER_SIZE);
-            playerRight2= scaleSquare(ImageIO.read(new File(path + "BoyWalkRight2.png")), PLAYER_SIZE);
-            
         } catch (IOException e) {
             System.err.println("Sprite Load Failed: " + e.getMessage());
         }
@@ -180,6 +170,8 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
     }
 
     void loadMap(String worldPath, String collisionPath) {
+        this.currentMapPath = worldPath;
+        this.currentCollisionPath = collisionPath;
         try {
             BufferedImage rawWorld = ImageIO.read(new File(worldPath));
             BufferedImage rawColl = ImageIO.read(new File(collisionPath));
@@ -193,6 +185,7 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
             System.err.println("Map Load Failed: " + e.getMessage());
         }
         refreshNPCs(worldPath);
+        
     }
 
     private void checkGrassEncounter() {
@@ -415,57 +408,26 @@ private BufferedImage loadAndScaleNPCSprite(String path) {
     void centerSpawnSafe() { playerX = WORLD_WIDTH / 2; playerY = WORLD_HEIGHT / 2+PLAYER_SIZE; }
 
    // Inside update()
-   public void update() {
-    if (up || down || left || right) {
+    void update() {
+    int nextX = playerX;
+    int nextY = playerY;
 
-        if (currentState == GameState.BATTLE) return;
-        int nextX = playerX;
-        int nextY = playerY;
         if (up)    { nextY -= SPEED; facing = Direction.UP; }
         if (down)  { nextY += SPEED; facing = Direction.DOWN; }
         if (left)  { nextX -= SPEED; facing = Direction.LEFT; }
         if (right) { nextX += SPEED; facing = Direction.RIGHT; }
+
         if (!isColliding(nextX, playerY)) playerX = nextX;
         if (!isColliding(playerX, nextY)) playerY = nextY;
+
         checkMapTransition();
         checkGrassEncounter();
+
         cameraX = playerX - SCREEN_WIDTH / 2 + PLAYER_SIZE / 2;
         cameraY = playerY - SCREEN_HEIGHT / 2 + PLAYER_SIZE / 2;
         cameraX = Math.max(0, Math.min(cameraX, WORLD_WIDTH - SCREEN_WIDTH));
         cameraY = Math.max(0, Math.min(cameraY, WORLD_HEIGHT - SCREEN_HEIGHT));
-
-        // Animation Timer
-        spriteCounter++;
-        if (spriteCounter > 12) {
-            spriteNum = (spriteNum == 1) ? 2 : 1;
-            spriteCounter = 0;
-        }
-
-        // Set the activeSprite based on direction and step
-        switch (facing) {
-            case UP:
-                activeSprite = (spriteNum == 1) ? playerUp1 : playerUp2;
-                break;
-            case DOWN:
-                activeSprite = (spriteNum == 1) ? playerDown1 : playerDown2;
-                break;
-            case LEFT:
-                activeSprite = (spriteNum == 1) ? playerLeft1 : playerLeft2;
-                break;
-            case RIGHT:
-                activeSprite = (spriteNum == 1) ? playerRight1 : playerRight2;
-                break;
-        }
-    } else {
-        // Idle frame
-        switch (facing) {
-            case UP: activeSprite = playerUp; break;
-            case DOWN: activeSprite = playerDown; break;
-            case LEFT: activeSprite = playerLeft; break;
-            case RIGHT: activeSprite = playerRight; break;
-        }
     }
-}
 
     // Ensure isColliding ignores the green color
     boolean isColliding(int nextX, int nextY) {
@@ -580,14 +542,10 @@ protected void paintComponent(Graphics g) {
         }
 
         // --- DRAW PLAYER (Final pass) ---
-        BufferedImage sprite = null;
-
-    if (activeSprite != null) {
-        g2.drawImage(activeSprite, playerX - cameraX + offsetX, playerY - cameraY + offsetY, null);
-    }
-    // if (sprite != null) {
-    //     g2.drawImage(sprite, playerX - cameraX + offsetX, playerY - cameraY + offsetY, null);
-    // }
+        BufferedImage sprite = switch (facing) {
+            case UP -> playerUp; case DOWN -> playerDown; case LEFT -> playerLeft; case RIGHT -> playerRight;
+        };
+        if (sprite != null) g2.drawImage(sprite, playerX - cameraX + offsetX, playerY - cameraY + offsetY, null);
         
     } else if (currentState == GameState.BATTLE) {
         // --- ALL BATTLE CODE PRESERVED EXACTLY AS PROVIDED ---
@@ -714,23 +672,15 @@ public void startTrainerBattle(NPC trainer) {
     up = down = left = right = false;
 }
 // Helper method so we don't have to repeat the switch statement
-// private void drawPlayer(Graphics2D g2, int offsetX, int offsetY) {
-//     BufferedImage sprite = switch (facing) {
-//         case UP -> playerUp;
-//         case DOWN -> playerDown;
-//         case LEFT -> playerLeft;
-//         case RIGHT -> playerRight;
-//     };
-//     if (sprite != null) {
-//         g2.drawImage(sprite, playerX - cameraX + offsetX, playerY - cameraY + offsetY, null);
-//     }
-// }
-
 private void drawPlayer(Graphics2D g2, int offsetX, int offsetY) {
-    if (activeSprite != null) {
-        int screenX = playerX - cameraX + offsetX;
-        int screenY = playerY - cameraY + offsetY;
-        g2.drawImage(activeSprite, screenX, screenY, null);
+    BufferedImage sprite = switch (facing) {
+        case UP -> playerUp;
+        case DOWN -> playerDown;
+        case LEFT -> playerLeft;
+        case RIGHT -> playerRight;
+    };
+    if (sprite != null) {
+        g2.drawImage(sprite, playerX - cameraX + offsetX, playerY - cameraY + offsetY, null);
     }
 }
 
@@ -840,6 +790,12 @@ private void drawPlayer(Graphics2D g2, int offsetX, int offsetY) {
             if(e.getKeyCode() == KeyEvent.VK_S) down = true;
             if(e.getKeyCode() == KeyEvent.VK_A) left = true;
             if(e.getKeyCode() == KeyEvent.VK_D) right = true;
+            if (e.getKeyCode() == KeyEvent.VK_K) {
+            saveGame();
+            }
+            if (e.getKeyCode() == KeyEvent.VK_L) {
+            loadGame();
+            }
 
             // --- CHANGE INTERACT TO E ---
             if (e.getKeyCode() == KeyEvent.VK_E) {
@@ -865,6 +821,8 @@ private void drawPlayer(Graphics2D g2, int offsetX, int offsetY) {
                 if (e.getKeyCode() == KeyEvent.VK_S || e.getKeyCode() == KeyEvent.VK_DOWN) { if (menuCursor <= 1) menuCursor += 2; }
                 if (e.getKeyCode() == KeyEvent.VK_A || e.getKeyCode() == KeyEvent.VK_LEFT) { if (menuCursor % 2 != 0) menuCursor -= 1; }
                 if (e.getKeyCode() == KeyEvent.VK_D || e.getKeyCode() == KeyEvent.VK_RIGHT) { if (menuCursor % 2 == 0) menuCursor += 1; }
+             
+                
             }
             else if (currentBattleMenu == BattleMenu.POKEMON_MENU) {
                 if (e.getKeyCode() == KeyEvent.VK_W || e.getKeyCode() == KeyEvent.VK_UP) { 
@@ -1031,6 +989,100 @@ private void drawPlayer(Graphics2D g2, int offsetX, int offsetY) {
             }
         }
     }
+
+ public void saveGame() {
+    // 1. Pop up a text box asking for the save name
+    String saveName = JOptionPane.showInputDialog(this, "Enter a name for this save file:", "Save Game", JOptionPane.PLAIN_MESSAGE);
+
+    // 2. If you click "Cancel" or leave it blank, abort the save entirely
+    if (saveName == null || saveName.trim().isEmpty()) {
+        System.out.println("Save cancelled.");
+        return;
+    }
+
+    // 3. Automatically add ".txt" if you forgot to type it
+    if (!saveName.endsWith(".txt")) {
+        saveName += ".txt";
+    }
+
+    try {
+        // 4. Combine your safe folder path with your new custom file name!
+        String basePath = "C:\\Users\\WainBra\\Documents\\GitCode\\Pokemon\\";
+        String filePath = basePath + saveName;
+        
+        PrintWriter writer = new PrintWriter(new FileWriter(filePath));
+        
+        writer.println("MAP_PATHS," + currentMapPath + "," + currentCollisionPath); 
+        writer.println("PLAYER_POS," + playerX + "," + playerY);
+        
+        for (Pokemon p : playerParty) {
+            writer.println("POKEMON," + p.getName() + "," + p.getLevel() + "," + p.getCurrentHp());
+        }
+        
+        writer.close();
+        System.out.println("Saved successfully as: " + saveName);
+        
+    } catch (IOException e) {
+        System.out.println("Error saving the game: " + e.getMessage());
+    }
+}
+
+   public void loadGame() {
+    // 1. Pop up a text box asking which file to load
+    String saveName = JOptionPane.showInputDialog(this, "Enter the name of the save file to load:", "Load Game", JOptionPane.PLAIN_MESSAGE);
+
+    if (saveName == null || saveName.trim().isEmpty()) {
+        System.out.println("Load cancelled.");
+        return;
+    }
+
+    if (!saveName.endsWith(".txt")) {
+        saveName += ".txt";
+    }
+
+    try {
+        // 2. Combine the path to find your specific file
+        String basePath = "C:\\Users\\WainBra\\Documents\\GitCode\\Pokemon\\";
+        String filePath = basePath + saveName;
+        File saveFile = new File(filePath);
+        
+        if (!saveFile.exists()) {
+            // Warns you with a popup if you type a name that doesn't exist!
+            JOptionPane.showMessageDialog(this, "No save file named '" + saveName + "' found!", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        
+        Scanner scanner = new Scanner(saveFile);
+        playerParty.clear(); 
+
+        while (scanner.hasNextLine()) {
+            String line = scanner.nextLine();
+            String[] data = line.split(","); 
+
+            if (data[0].equals("MAP_PATHS")) {
+                loadMap(data[1], data[2]);
+            } 
+            else if (data[0].equals("PLAYER_POS")) {
+                playerX = Integer.parseInt(data[1]);
+                playerY = Integer.parseInt(data[2]);
+            } 
+            else if (data[0].equals("POKEMON")) {
+                Pokemon loadedPokemon = new Pokemon(data[1], Integer.parseInt(data[2]));
+                int hpDifference = loadedPokemon.getMaxHp() - Integer.parseInt(data[3]);
+                if (hpDifference > 0) loadedPokemon.takeDamage(hpDifference);
+                playerParty.add(loadedPokemon);
+            }
+        }
+        
+        scanner.close();
+        if (!playerParty.isEmpty()) myPokemon = playerParty.get(0);
+        
+        System.out.println("Successfully loaded: " + saveName);
+        
+    } catch (Exception e) {
+        System.out.println("Error loading the game: " + e.getMessage());
+    }
+}
     
     @Override public void keyReleased(KeyEvent e) {
         if(e.getKeyCode() == KeyEvent.VK_W) up = false;

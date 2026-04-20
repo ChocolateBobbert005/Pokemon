@@ -123,6 +123,15 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
             playerDown = scaleSquare(ImageIO.read(new File(path + "boy_down.png")), PLAYER_SIZE);
             playerLeft = scaleSquare(ImageIO.read(new File(path + "boy_left.png")), PLAYER_SIZE);
             playerRight = scaleSquare(ImageIO.read(new File(path + "boy_right.png")), PLAYER_SIZE);
+            playerDown1 = scaleSquare(ImageIO.read(new File(path + "BoyWalkDown1.png")), PLAYER_SIZE);
+            playerDown2 = scaleSquare(ImageIO.read(new File(path + "BoyWalkDown2.png")), PLAYER_SIZE);
+            playerUp1 = scaleSquare(ImageIO.read(new File(path + "BoyWalkUp1.png")), PLAYER_SIZE);
+            playerUp2 = scaleSquare(ImageIO.read(new File(path + "BoyWalkUp2.png")), PLAYER_SIZE);
+            playerLeft1 = scaleSquare(ImageIO.read(new File(path + "BoyWalkLeft1.png")), PLAYER_SIZE);
+            playerLeft2 = scaleSquare(ImageIO.read(new File(path + "BoyWalkLeft2.png")), PLAYER_SIZE);
+            playerRight1 = scaleSquare(ImageIO.read(new File(path + "BoyWalkRight1.png")), PLAYER_SIZE);
+            playerRight2= scaleSquare(ImageIO.read(new File(path + "BoyWalkRight2.png")), PLAYER_SIZE);
+            
         } catch (IOException e) {
             System.err.println("Sprite Load Failed: " + e.getMessage());
         }
@@ -418,27 +427,57 @@ private BufferedImage loadAndScaleNPCSprite(String path) {
 
     void centerSpawnSafe() { playerX = WORLD_WIDTH / 2; playerY = WORLD_HEIGHT / 2+PLAYER_SIZE; }
 
-   // Inside update()
-    void update() {
-    int nextX = playerX;
-    int nextY = playerY;
+public void update() {
+    if (up || down || left || right) {
 
+        if (currentState == GameState.BATTLE) return;
+        int nextX = playerX;
+        int nextY = playerY;
         if (up)    { nextY -= SPEED; facing = Direction.UP; }
         if (down)  { nextY += SPEED; facing = Direction.DOWN; }
         if (left)  { nextX -= SPEED; facing = Direction.LEFT; }
         if (right) { nextX += SPEED; facing = Direction.RIGHT; }
-
         if (!isColliding(nextX, playerY)) playerX = nextX;
         if (!isColliding(playerX, nextY)) playerY = nextY;
-
         checkMapTransition();
         checkGrassEncounter();
-
         cameraX = playerX - SCREEN_WIDTH / 2 + PLAYER_SIZE / 2;
         cameraY = playerY - SCREEN_HEIGHT / 2 + PLAYER_SIZE / 2;
         cameraX = Math.max(0, Math.min(cameraX, WORLD_WIDTH - SCREEN_WIDTH));
         cameraY = Math.max(0, Math.min(cameraY, WORLD_HEIGHT - SCREEN_HEIGHT));
+
+        // Animation Timer
+        spriteCounter++;
+        if (spriteCounter > 12) {
+            spriteNum = (spriteNum == 1) ? 2 : 1;
+            spriteCounter = 0;
+        }
+
+        // Set the activeSprite based on direction and step
+        switch (facing) {
+            case UP:
+                activeSprite = (spriteNum == 1) ? playerUp1 : playerUp2;
+                break;
+            case DOWN:
+                activeSprite = (spriteNum == 1) ? playerDown1 : playerDown2;
+                break;
+            case LEFT:
+                activeSprite = (spriteNum == 1) ? playerLeft1 : playerLeft2;
+                break;
+            case RIGHT:
+                activeSprite = (spriteNum == 1) ? playerRight1 : playerRight2;
+                break;
+        }
+    } else {
+        // Idle frame
+        switch (facing) {
+            case UP: activeSprite = playerUp; break;
+            case DOWN: activeSprite = playerDown; break;
+            case LEFT: activeSprite = playerLeft; break;
+            case RIGHT: activeSprite = playerRight; break;
+        }
     }
+}
 
     // Ensure isColliding ignores the green color
     boolean isColliding(int nextX, int nextY) {
@@ -696,7 +735,7 @@ public void startTrainerBattle(NPC trainer) {
     // 4. Freeze movement so you don't walk away during the transition
     up = down = left = right = false;
 }
-// Helper method so we don't have to repeat the switch statement
+Helper method so we don't have to repeat the switch statement
 private void drawPlayer(Graphics2D g2, int offsetX, int offsetY) {
     BufferedImage sprite = switch (facing) {
         case UP -> playerUp;
@@ -707,6 +746,13 @@ private void drawPlayer(Graphics2D g2, int offsetX, int offsetY) {
     if (sprite != null) {
         g2.drawImage(sprite, playerX - cameraX + offsetX, playerY - cameraY + offsetY, null);
     }
+}
+
+private void drawPlayer(Graphics2D g2, int offsetX, int offsetY) {
+    if (activeSprite != null) {
+        int screenX = playerX - cameraX + offsetX;
+        int screenY = playerY - cameraY + offsetY;
+        g2.drawImage(activeSprite, screenX, screenY, null);
 }
 
     // Helper scaling methods (kept your logic)

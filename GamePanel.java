@@ -100,18 +100,12 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
     
 
         loadPlayerSprites();
-        loadPortalData("C:\\Users\\WainBra\\Documents\\GitCode\\Pokemon\\world.txt");
+        loadPortalData("C:\\Users\\Lemkcar\\Documents\\GitCode\\Pokemon\\world.txt");
         
         loadMap("T:\\HS\\Student\\Computer Science\\Software Engineering\\TeamSeniorSlackers\\Lph.png",
                 "T:\\HS\\Student\\Computer Science\\Software Engineering\\TeamSeniorSlackers\\LphC2.png");
         
         findSpawnPoint(new Color(0, 0, 255));
-        
-        //myPokemon = new Pokemon("Charmander", 5);
-        //playerParty.add(myPokemon);
-        // --- ADD THESE LINES TO FIX SWITCHING ---
-        // playerParty.add(new Pokemon("Squirtle", 5));
-        // playerParty.add(new Pokemon("Bulbasaur", 5));
         
         timer.start();
     }
@@ -1042,8 +1036,9 @@ private void drawPlayer(Graphics2D g2, int offsetX, int offsetY) {
                     currentBattleMenu = BattleMenu.MAIN; menuCursor = 0;
                 }
             }
-        }
+       }
     }
+}
 
  public void saveGame() {
     // 1. Pop up a text box asking for the save name

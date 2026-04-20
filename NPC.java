@@ -6,6 +6,7 @@ import java.util.ArrayList;
 
 public class NPC {
     public String name;
+    public String type;
     public int x, y, size;
     public BufferedImage sprite;
     public ArrayList<Pokemon> party = new ArrayList<>();

@@ -27,8 +27,11 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
     private Direction facing = Direction.DOWN;
 
     // ===== GAME STATES =====
-    private enum GameState { OVERWORLD, BATTLE }
+    private enum GameState { OVERWORLD, BATTLE, OAK_DIALOGUE, STARTER_SELECT }
     private GameState currentState = GameState.OVERWORLD;
+    private int dialogueIndex = 0;
+    private int starterCursor = 0; // 0: Bulbasaur, 1: Squirtle, 2: Charmander
+    private String[] starters = {"Bulbasaur", "Squirtle", "Charmander"};
 
     // ===== PLAYER =====
     private int playerX, playerY;
@@ -38,6 +41,7 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
 
     private boolean up, down, left, right;
     private BufferedImage playerUp, playerDown, playerLeft, playerRight, playerUp1, playerUp2, playerDown1, playerDown2, playerLeft1, playerLeft2, playerRight1, playerRight2;
+    private boolean hasStarter = false; // Starts as false
 
     // ===== GAME LOOP =====
     private final Timer timer = new Timer(16, this);
@@ -55,7 +59,7 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
     // ===== BATTLE VARIABLES =====
     private final String SPRITE_PATH = "T:\\HS\\Student\\Computer Science\\Software Engineering\\Pokemon Sprites\\";
     
-    private ArrayList<Pokemon> playerParty = new ArrayList<>();
+    private ArrayList<Pokemon> playerParty = new ArrayList<Pokemon>();
     private Pokemon myPokemon; 
     
     private Pokemon currentEnemy;
@@ -84,6 +88,8 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
             this.spawnColor = s;
         }
     }
+    // Inside your main class variables
+    OakHandler oakHandler = new OakHandler(SCREEN_WIDTH, SCREEN_HEIGHT);
 
     public GamePanel() {
         setPreferredSize(new Dimension(SCREEN_WIDTH, SCREEN_HEIGHT));
@@ -99,11 +105,11 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
         
         findSpawnPoint(new Color(0, 0, 255));
         
-        myPokemon = new Pokemon("Charmander", 5);
-        playerParty.add(myPokemon);
+        //myPokemon = new Pokemon("Charmander", 5);
+        //playerParty.add(myPokemon);
         // --- ADD THESE LINES TO FIX SWITCHING ---
-        playerParty.add(new Pokemon("Squirtle", 5));
-        playerParty.add(new Pokemon("Bulbasaur", 5));
+        // playerParty.add(new Pokemon("Squirtle", 5));
+        // playerParty.add(new Pokemon("Bulbasaur", 5));
         
         timer.start();
     }
@@ -194,6 +200,7 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
         }
         refreshNPCs(worldPath);
     }
+
 
     private void checkGrassEncounter() {
         if (!(up || down || left || right)) return;
@@ -320,6 +327,7 @@ private void parseMasterNPCFile(String path, String filterMap) {
             
             // Only proceed if the NPC lives in the map we just entered
             if (mapInFile.equalsIgnoreCase(filterMap)) {
+                String type = data[1].trim();
                 String name = data[2].trim();
                 int x = Integer.parseInt(data[4].trim()) * SCALE;
                 int y = Integer.parseInt(data[5].trim()) * SCALE;
@@ -528,9 +536,8 @@ protected void paintComponent(Graphics g) {
     super.paintComponent(g);
     Graphics2D g2 = (Graphics2D) g;
     
-    if (currentState == GameState.OVERWORLD) {
+    if (currentState == GameState.OVERWORLD || currentState == GameState.OAK_DIALOGUE || currentState == GameState.STARTER_SELECT) {
         if (worldMap == null) return;
-
         int screenW = getWidth(); int screenH = getHeight();
         int offsetX = 0; int offsetY = 0;
         if (WORLD_WIDTH < screenW) offsetX = (screenW - WORLD_WIDTH) / 2;
@@ -574,20 +581,25 @@ protected void paintComponent(Graphics g) {
                 }
             }
         }
-        
         if (!playerDrawn) {
             drawPlayer(g2, offsetX, offsetY);
         }
 
         // --- DRAW PLAYER (Final pass) ---
         BufferedImage sprite = null;
-
+        
+    
+    
+    
+    
     if (activeSprite != null) {
         g2.drawImage(activeSprite, playerX - cameraX + offsetX, playerY - cameraY + offsetY, null);
     }
-    // if (sprite != null) {
-    //     g2.drawImage(sprite, playerX - cameraX + offsetX, playerY - cameraY + offsetY, null);
-    // }
+    // --- NEW: OAK UI OVERLAY ---
+    // This draws the dialogue or starter menu ON TOP of the map/sprites
+    if (currentState == GameState.OAK_DIALOGUE || currentState == GameState.STARTER_SELECT) {
+        oakHandler.draw(g2);
+    }
         
     } else if (currentState == GameState.BATTLE) {
         // --- ALL BATTLE CODE PRESERVED EXACTLY AS PROVIDED ---
@@ -620,7 +632,7 @@ protected void paintComponent(Graphics g) {
             
             g.setFont(new Font("Monospaced", Font.BOLD, 24));
             g.drawString("Choose a Pokémon:", 80, 100);
-            
+
             for (int i = 0; i < playerParty.size(); i++) {
                 Pokemon p = playerParty.get(i);
                 int yPos = 160 + (i * 60);
@@ -681,6 +693,8 @@ protected void paintComponent(Graphics g) {
         }
     }
 }
+
+
 
 // Separate helper for Battle so it doesn't clutter the Overworld logic
 private void drawBattleScreen(Graphics2D g2) {
@@ -833,14 +847,44 @@ private void drawPlayer(Graphics2D g2, int offsetX, int offsetY) {
     @Override public void actionPerformed(ActionEvent e) { update(); repaint(); }
     
     @Override public void keyPressed(KeyEvent e) {
-        
-        if (currentState == GameState.OVERWORLD) {
+        // If Oak menu is open, give him all the input
+    if (currentState == GameState.OAK_DIALOGUE) {
+        Pokemon gift = oakHandler.handleInput(e);
+    if (gift != null) {
+        playerParty.add(gift);
+        myPokemon = gift; // Set active pokemon so it doesn't crash!
+        hasStarter = true; // <--- LOCK THE DOOR. No more starters!
+        currentState = GameState.OVERWORLD;
+    }
+    // Handle the case where the dialogue ends in post-gift mode
+    if (!oakHandler.isActive()) {
+        currentState = GameState.OVERWORLD;
+    }
+        return; // Don't allow movement while talking to Oak
+    }
+
+    // Standard Overworld logic
+    if (currentState == GameState.OVERWORLD) {
+        if (e.getKeyCode() == KeyEvent.VK_E) {
+            for (NPC npc : npcList) {
+                if (isNear(npc)) {
+                    currentState = GameState.OAK_DIALOGUE; // Freeze the world
+    
+                    if (!hasStarter) {
+                        oakHandler.start(); // Runs the "Choose your Pokemon" code
+                    } else {
+                        oakHandler.startPostGiftDialogue("Take good care of your Pokemon!"); // Just shows text
+                    }
+                }
+            }
+        }
             int code = e.getKeyCode();
             if(e.getKeyCode() == KeyEvent.VK_W) up = true;
             if(e.getKeyCode() == KeyEvent.VK_S) down = true;
             if(e.getKeyCode() == KeyEvent.VK_A) left = true;
-            if(e.getKeyCode() == KeyEvent.VK_D) right = true;
-
+            if(e.getKeyCode() == KeyEvent.VK_D) right = true;    
+        }
+    
             // --- CHANGE INTERACT TO E ---
             if (e.getKeyCode() == KeyEvent.VK_E) {
                 if (currentState == GameState.OVERWORLD) {
@@ -852,11 +896,12 @@ private void drawPlayer(Graphics2D g2, int offsetX, int offsetY) {
                         System.out.println("predded");
                         triggerTrainerBattle(npc);
                         break; 
+                    }
+            
                 }
-        }
-    }
-}
-        } 
+                }
+
+            } 
        else if (currentState == GameState.BATTLE) {
             
             // --- 1. MENU NAVIGATION (W/A/S/D / Arrows) ---

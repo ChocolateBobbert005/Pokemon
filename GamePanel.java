@@ -735,7 +735,7 @@ public void startTrainerBattle(NPC trainer) {
     // 4. Freeze movement so you don't walk away during the transition
     up = down = left = right = false;
 }
-Helper method so we don't have to repeat the switch statement
+//Helper method so we don't have to repeat the switch statement
 private void drawPlayer(Graphics2D g2, int offsetX, int offsetY) {
     BufferedImage sprite = switch (facing) {
         case UP -> playerUp;

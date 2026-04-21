@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.Scanner;
 import java.util.ArrayList;
 import java.util.List;
+import javax.sound.sampled.*;
 
 public class GamePanel extends JPanel implements KeyListener, ActionListener {
 
@@ -51,6 +52,13 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
     // ===== ENCOUNTER SETTINGS =====
     private final int ENCOUNTER_COLOR = new Color(57, 148, 49).getRGB() & 0xFFFFFF;
     private final double ENCOUNTER_CHANCE = 0.05; 
+
+    // ===== SOUND ===== 
+
+    private final String SOUND_DIR = "T:\\HS\\Student\\Computer Science\\Software Engineering\\TeamSeniorSlackers\\Sounds\\";
+    private Clip backgroundMusic;
+    private long lastBumpTime = 0;
+    private final long BUMP_COOLDOWN = 300;
     
     // ===== BATTLE VARIABLES =====
     private final String SPRITE_PATH = "T:\\HS\\Student\\Computer Science\\Software Engineering\\Pokemon Sprites\\";
@@ -71,12 +79,14 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
 
     // Font(Name, Style, Size)
     class MapData {
-        String worldPath, collisionPath;
+        
+        String worldPath, collisionPath, musicFile;
         Color spawnColor;
-        MapData(String w, String c, Color s) {
+        MapData(String w, String c, Color s, String m) {
             this.worldPath = w;
             this.collisionPath = c;
             this.spawnColor = s;
+            this.musicFile = m;
         }
     }
 
@@ -87,7 +97,7 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
         addKeyListener(this);
 
         loadPlayerSprites();
-        loadPortalData("C:\\Users\\WainBra\\Documents\\GitCode\\Pokemon\\world.txt");
+        loadPortalData("C:\\Users\\westsim\\Documents\\Git3\\Pokemon\\world.txt");
         
         loadMap("T:\\HS\\Student\\Computer Science\\Software Engineering\\TeamSeniorSlackers\\Lph.png",
                 "T:\\HS\\Student\\Computer Science\\Software Engineering\\TeamSeniorSlackers\\LphC2.png");
@@ -99,9 +109,43 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
         // --- ADD THESE LINES TO FIX SWITCHING ---
         playerParty.add(new Pokemon("Squirtle", 5));
         playerParty.add(new Pokemon("Bulbasaur", 5));
+
+        playSound("04 - Pallet Town.wav", true);
         
         timer.start();
     }
+
+    public void playSound(String fileName, boolean loop) {
+    try {
+        File file = new File(SOUND_DIR + fileName);
+        if (!file.exists()) {
+            System.err.println("File not found: " + fileName);
+            return;
+        }
+
+        AudioInputStream ais = AudioSystem.getAudioInputStream(file);
+        Clip clip = AudioSystem.getClip();
+        clip.open(ais);
+
+        if (loop) {
+            // If it's music, stop the old song first
+            if (backgroundMusic != null) {
+                backgroundMusic.stop();
+                backgroundMusic.close();
+            }
+            backgroundMusic = clip;
+            backgroundMusic.loop(Clip.LOOP_CONTINUOUSLY);
+            FloatControl gainControl = (FloatControl) clip.getControl(FloatControl.Type.MASTER_GAIN);
+            gainControl.setValue(-15.0f);
+        } else {
+            // If it's a sound effect, just play once
+            clip.start();
+        }
+
+    } catch (Exception e) {
+        System.err.println("Error playing sound: " + e.getMessage());
+    }
+}
 
     private void loadPlayerSprites() {
         try {
@@ -404,6 +448,7 @@ private BufferedImage loadAndScaleNPCSprite(String path) {
     void update() {
     int nextX = playerX;
     int nextY = playerY;
+    boolean inputGiven = false;
 
         if (up)    { nextY -= SPEED; facing = Direction.UP; }
         if (down)  { nextY += SPEED; facing = Direction.DOWN; }
@@ -412,6 +457,35 @@ private BufferedImage loadAndScaleNPCSprite(String path) {
 
         if (!isColliding(nextX, playerY)) playerX = nextX;
         if (!isColliding(playerX, nextY)) playerY = nextY;
+
+        boolean movedX = false;
+        boolean movedY = false;
+
+        // 2. Try to move X
+    if (!isColliding(nextX, playerY)) {
+        if (playerX != nextX) {
+            playerX = nextX;
+            movedX = true;
+        }
+    }
+
+    // 3. Try to move Y
+    if (!isColliding(playerX, nextY)) {
+        if (playerY != nextY) {
+            playerY = nextY;
+            movedY = true;
+        }
+    }
+
+    // 4. BUMP LOGIC: 
+    // If user tried to move (inputGiven) but didn't actually move (movedX/Y)
+    if (inputGiven && !movedX && !movedY) {
+        long now = System.currentTimeMillis();
+        if (now - lastBumpTime > BUMP_COOLDOWN) {
+            playSound("SE_BUMP.wav", false); // Play thud once
+            lastBumpTime = now;
+        }
+    }
 
         checkMapTransition();
         checkGrassEncounter();
@@ -703,7 +777,13 @@ private void drawPlayer(Graphics2D g2, int offsetX, int offsetY) {
                 String[] vals = parts[1].trim().split(",");
                 Color pColor = new Color(Integer.parseInt(rgb[0].trim()), Integer.parseInt(rgb[1].trim()), Integer.parseInt(rgb[2].trim()));
                 Color sColor = new Color(Integer.parseInt(vals[2].trim()), Integer.parseInt(vals[3].trim()), Integer.parseInt(vals[4].trim()));
-                portalMap.put(pColor.getRGB(), new MapData(vals[0].trim(), vals[1].trim(), sColor));
+                
+                // NEW: Grab the music filename (index 5)
+                String music = vals[5].trim();
+
+                // Create MapData including the music string
+                portalMap.put(pColor.getRGB(), new MapData(vals[0].trim(), vals[1].trim(), sColor, music));
+
             }
         } catch (Exception e) { System.err.println("Portal Data Error"); }
     }
@@ -720,6 +800,7 @@ private void drawPlayer(Graphics2D g2, int offsetX, int offsetY) {
             MapData data = portalMap.get(key | 0xFF000000);
             loadMap(data.worldPath, data.collisionPath);
             findSpawnPoint(data.spawnColor);
+            playSound(data.musicFile, true);
             lastTransitionTime = now;
         }
     }

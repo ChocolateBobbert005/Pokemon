@@ -100,18 +100,12 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
     
 
         loadPlayerSprites();
-        loadPortalData("C:\\Users\\WainBra\\Documents\\GitCode\\Pokemon\\world.txt");
-        
+        loadPortalData("C:\\Users\\Lemkcar\\Documents\\GitCode\\Pokemon\\world.txt");
+
         loadMap("T:\\HS\\Student\\Computer Science\\Software Engineering\\TeamSeniorSlackers\\Lph.png",
                 "T:\\HS\\Student\\Computer Science\\Software Engineering\\TeamSeniorSlackers\\LphC2.png");
         
         findSpawnPoint(new Color(0, 0, 255));
-        
-        //myPokemon = new Pokemon("Charmander", 5);
-        //playerParty.add(myPokemon);
-        // --- ADD THESE LINES TO FIX SWITCHING ---
-        // playerParty.add(new Pokemon("Squirtle", 5));
-        // playerParty.add(new Pokemon("Bulbasaur", 5));
         
         timer.start();
     }
@@ -201,6 +195,7 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
             WORLD_HEIGHT = worldMap.getHeight();
         } catch (IOException e) {
             System.err.println("Map Load Failed: " + e.getMessage());
+            e.printStackTrace();
         }
         refreshNPCs(worldPath);
         
@@ -735,24 +730,12 @@ public void startTrainerBattle(NPC trainer) {
     // 4. Freeze movement so you don't walk away during the transition
     up = down = left = right = false;
 }
-//Helper method so we don't have to repeat the switch statement
-private void drawPlayer(Graphics2D g2, int offsetX, int offsetY) {
-    BufferedImage sprite = switch (facing) {
-        case UP -> playerUp;
-        case DOWN -> playerDown;
-        case LEFT -> playerLeft;
-        case RIGHT -> playerRight;
-    };
-    if (sprite != null) {
-        g2.drawImage(sprite, playerX - cameraX + offsetX, playerY - cameraY + offsetY, null);
-    }
-}
-
 private void drawPlayer(Graphics2D g2, int offsetX, int offsetY) {
     if (activeSprite != null) {
         int screenX = playerX - cameraX + offsetX;
         int screenY = playerY - cameraY + offsetY;
         g2.drawImage(activeSprite, screenX, screenY, null);
+    }
 }
 
     // Helper scaling methods (kept your logic)
@@ -854,7 +837,6 @@ private void drawPlayer(Graphics2D g2, int offsetX, int offsetY) {
     @Override public void actionPerformed(ActionEvent e) { update(); repaint(); }
     
     @Override public void keyPressed(KeyEvent e) {
-        // If Oak menu is open, give him all the input
     if (currentState == GameState.OAK_DIALOGUE) {
         Pokemon gift = oakHandler.handleInput(e);
     if (gift != null) {
@@ -912,10 +894,10 @@ private void drawPlayer(Graphics2D g2, int offsetX, int offsetY) {
             
                 }
                 }
+            }
 
-            } 
+        } 
        else if (currentState == GameState.BATTLE) {
-            
             // --- 1. MENU NAVIGATION (W/A/S/D / Arrows) ---
             if (currentBattleMenu == BattleMenu.MAIN || currentBattleMenu == BattleMenu.FIGHT) {
                 if (e.getKeyCode() == KeyEvent.VK_W || e.getKeyCode() == KeyEvent.VK_UP) { if (menuCursor >= 2) menuCursor -= 2; }
@@ -1089,7 +1071,8 @@ private void drawPlayer(Graphics2D g2, int offsetX, int offsetY) {
                 }
             }
         }
-    }
+    
+}
 
  public void saveGame() {
     // 1. Pop up a text box asking for the save name

@@ -10,16 +10,26 @@ public class NPC {
     public int x, y, size;
     public BufferedImage sprite;
     public ArrayList<Pokemon> party = new ArrayList<>();
-    public NPC(String name, int x, int y, int size, BufferedImage sprite) {
+    public NPC(String type, String name, int x, int y, int size, BufferedImage sprite) {
         this.name = name;
         this.x = x;
         this.y = y;
         this.size = size;
         this.sprite = sprite;
+        this.type = type;
     }
+
+    public int getX() {return x;}
+    public int getY() { return y;}
+    public BufferedImage getSprite(){ return sprite; }
 
     public Rectangle getBounds() {
         return new Rectangle(x, y, size, size);
+    }
+
+    public String getType()
+    {
+        return type;
     }
     
     public void draw(Graphics2D g2, int playerX, int playerY) {
@@ -82,4 +92,5 @@ public class NPC {
             System.out.println("Could not load party for " + name);
         }
     }
+    
 }

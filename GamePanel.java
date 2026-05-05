@@ -27,15 +27,12 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
     private Direction facing = Direction.DOWN;
 
     // ===== GAME STATES =====
-    private enum GameState { OVERWORLD, BATTLE, OAK_DIALOGUE, STARTER_SELECT }
+    private enum GameState { OVERWORLD, BATTLE, OAK_DIALOGUE, STARTER_SELECT, NURSE_MENU }
     private GameState currentState = GameState.OVERWORLD;
-    private int dialogueIndex = 0;
-    private int starterCursor = 0; // 0: Bulbasaur, 1: Squirtle, 2: Charmander
-    private String[] starters = {"Bulbasaur", "Squirtle", "Charmander"};
 
     // ===== PLAYER =====
     private int playerX, playerY;
-    private final int PLAYER_SIZE = 35;
+    private final int PLAYER_SIZE = 36;
     private final int SPEED = 4;
     private int cameraX, cameraY;
 
@@ -86,7 +83,8 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
     private BufferedImage activeSprite; 
     private int spriteCounter = 0;
     private int spriteNum = 1;
-
+    private String nurseMessage = "Welcome! Would you like me to heal your Pokémon?";
+    private boolean nurseInteractionFinished = false;
     // Font(Name, Style, Size)
     class MapData {
         
@@ -99,6 +97,9 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
             this.musicFile = m;
         }
     }
+    private String currentDialogueText = ""; // The single line being displayed
+    private String[] activeDialogueSet;      // The full array of lines from the NPC
+    private int dialogueIndex = 0;           // Which line we are currently on
     // Inside your main class variables
     OakHandler oakHandler = new OakHandler(SCREEN_WIDTH, SCREEN_HEIGHT);
 
@@ -110,7 +111,7 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
     
 
         loadPlayerSprites();
-        loadPortalData("C:\\Users\\westsim\\Documents\\Git3\\Pokemon\\world.txt");
+        loadPortalData("T:\\HS\\Student\\Computer Science\\Software Engineering\\TeamSeniorSlackers\\world.txt");
         
         loadMap("T:\\HS\\Student\\Computer Science\\Software Engineering\\TeamSeniorSlackers\\Lph.png",
                 "T:\\HS\\Student\\Computer Science\\Software Engineering\\TeamSeniorSlackers\\LphC2.png");
@@ -187,42 +188,63 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
         }
     }
 
-    public void loadNPCsForMap(String currentMap) {
-    // 1. Clear the old NPCs so they don't follow you to the new map!
-    npcList.clear();
+    public void loadMapNPCs(String currentMap) {
+        npcList.clear(); // Wipe the old map's NPCs
 
-    try {
-        Scanner reader = new Scanner(new File("C:\\Users\\Lemkcar\\Documents\\GitCode\\Pokemon\\NPC.java"));
-        while (reader.hasNextLine()) {
-            String line = reader.nextLine();
-            if (line.trim().isEmpty() || line.startsWith("#")) continue;
+        // 1. Define the file location
+        File file = new File("C:\\Users\\Lemkcar\\Documents\\GitCode\\Pokemon\\npcs.txt");
 
-            String[] parts = line.split(",");
-            String mapID = parts[0].trim();
+        // 2. Check if the file actually exists on your hard drive
+        if (!file.exists()) {
+            System.err.println("ERROR: Could not find npcs.txt at: " + file.getAbsolutePath());
+            return;
+        }
 
-            // 2. Only load the NPC if the Map ID matches where the player is
-            if (mapID.equalsIgnoreCase(currentMap)) {
-                String type = parts[1].trim();
-                String name = parts[2].trim();
-                String spritePath = parts[3].trim();
-                int x = Integer.parseInt(parts[4].trim());
-                int y = Integer.parseInt(parts[5].trim());
-                String message = parts[6].trim();
+        // 3. Read the file using standard FileReader
+        try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                // Skip empty lines or comments
+                if (line.trim().isEmpty() || line.startsWith("#")) continue;
 
-                BufferedImage sprite = ImageIO.read(new File(spritePath));
+                String[] d = line.split(",");
+                
+                // Only load NPCs for the current map (First column in your text file)
+                if (!d[0].trim().equalsIgnoreCase(currentMap)) continue;
 
-                if (type.equalsIgnoreCase("TRAINER")) {
-                    npcList.add(new TrainerNPC(name, x, y, 64, sprite, message));
-                } else {
-                    npcList.add(new NPC(name, x, y, 64, sprite));
-                    // Note: You might want to add a 'message' field to your NPC class
+                // Extract the data from the CSV columns
+                String type = d[1].trim();
+                String name = d[2].trim();
+                String spritePath = d[3].trim();
+                int x = Integer.parseInt(d[4].trim());
+                int y = Integer.parseInt(d[5].trim());
+                String msg = (d.length > 6) ? d[6].trim() : "";
+
+                // Load the image (Uses your existing helper method)
+                BufferedImage sprite = loadAndScaleNPCSprite(spritePath);
+
+                // 4. POLYMORPHISM: Create the specific object based on 'type'
+                switch (type.toUpperCase()) {
+                    case "NURSE":
+                        npcList.add(new NurseNPC(x, y, sprite));
+                        break;
+                    case "TRAINER":
+                        npcList.add(new TrainerNPC(name, x, y, 64, sprite, msg));
+                        break;
+                    case "OAK":
+                        // Keeps Oak as a standard NPC but with a special "OAK" type label
+                        npcList.add(new NPC("OAK", name, x, y, 64, sprite));
+                        break;
+                    default:
+                        // Regular townspeople
+                        npcList.add(new NPC(type, name, x, y, 64, sprite));
+                        break;
                 }
             }
+        } catch (Exception e) {
+            System.err.println("Failed to read NPC file: " + e.getMessage());
+            e.printStackTrace();
         }
-        reader.close();
-    } catch (IOException e) {
-        System.out.println("Error loading NPCs for map " + currentMap + ": " + e.getMessage());
-    }
     }
 
     void loadMap(String worldPath, String collisionPath) {
@@ -350,45 +372,8 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
  */
 public void refreshNPCs(String currentMapPath) {
     npcList.clear(); // Clear the stage
-    parseMasterNPCFile("npcs.txt", currentMapPath);
+    loadMapNPCs(currentMapPath);
 }
-
-/**
- * MASTER FILE PARSER
- * Isolated logic to scan the big file and filter by map name.
- */
-private void parseMasterNPCFile(String path, String filterMap) {
-    File file = new File(path);
-    if (!file.exists()) return;
-    
-    try (BufferedReader br = new BufferedReader(new FileReader(file))) {
-        String line;
-        while ((line = br.readLine()) != null) {
-            String[] data = line.split(",");
-            if (data.length < 5) continue;
-
-            String mapInFile = data[0].trim();
-            
-            // Only proceed if the NPC lives in the map we just entered
-            if (mapInFile.equalsIgnoreCase(filterMap)) {
-                String type = data[1].trim();
-                String name = data[2].trim();
-                int x = Integer.parseInt(data[4].trim()) * SCALE;
-                int y = Integer.parseInt(data[5].trim()) * SCALE;
-                String spritePath = data[3].trim();
-
-                BufferedImage sprite = loadAndScaleNPCSprite(spritePath);
-                if (sprite != null) {
-                    npcList.add(new NPC(name, x, y, PLAYER_SIZE, sprite));
-                }
-            }
-        }
-    } catch (Exception e) {
-        System.err.println("NPC System Error: " + e.getMessage());
-        e.printStackTrace();
-    }
-}
-
 /**
  * INDEPENDENT SCALER
  * Scales NPC sprites without touching your map scaling methods.
@@ -396,12 +381,12 @@ private void parseMasterNPCFile(String path, String filterMap) {
 private BufferedImage loadAndScaleNPCSprite(String path) {
     try {
         BufferedImage img = ImageIO.read(new File(path));
-        BufferedImage scaled = new BufferedImage(PLAYER_SIZE, PLAYER_SIZE, BufferedImage.TYPE_INT_ARGB);
+        BufferedImage scaled = new BufferedImage(PLAYER_SIZE, PLAYER_SIZE + 7, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g2 = scaled.createGraphics();
         
         // Use Nearest Neighbor to keep the pixel art sharp
         g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
-        g2.drawImage(img, 0, 0, PLAYER_SIZE, PLAYER_SIZE, null);
+        g2.drawImage(img, 0, 0, PLAYER_SIZE, PLAYER_SIZE + 7, null);
         g2.dispose();
         
         return scaled;
@@ -521,7 +506,7 @@ public void update() {
 
         // Animation Timer
         spriteCounter++;
-        if (spriteCounter > 12) {
+        if (spriteCounter > 11) {
             spriteNum = (spriteNum == 1) ? 2 : 1;
             spriteCounter = 0;
         }
@@ -613,7 +598,8 @@ protected void paintComponent(Graphics g) {
     super.paintComponent(g);
     Graphics2D g2 = (Graphics2D) g;
     
-    if (currentState == GameState.OVERWORLD || currentState == GameState.OAK_DIALOGUE || currentState == GameState.STARTER_SELECT) {
+    
+    if (currentState == GameState.OVERWORLD || currentState == GameState.OAK_DIALOGUE || currentState == GameState.STARTER_SELECT || currentState == GameState.NURSE_MENU) {
         if (worldMap == null) return;
         int screenW = getWidth(); int screenH = getHeight();
         int offsetX = 0; int offsetY = 0;
@@ -621,8 +607,8 @@ protected void paintComponent(Graphics g) {
         if (WORLD_HEIGHT < screenH) offsetY = (screenH - WORLD_HEIGHT) / 2;
 
         g2.drawImage(worldMap, offsetX - cameraX, offsetY - cameraY, null);
-
         boolean playerDrawn = false;
+        
         for (NPC npc : npcList) {
             int npcScreenX = npc.x - cameraX + offsetX;
             int npcScreenY = npc.y - cameraY + offsetY;
@@ -658,20 +644,11 @@ protected void paintComponent(Graphics g) {
                 }
             }
         }
-        if (!playerDrawn) {
+        
+        
+    if (!playerDrawn) {
             drawPlayer(g2, offsetX, offsetY);
         }
-
-        // --- DRAW PLAYER (Final pass) ---
-        BufferedImage sprite = null;
-        
-    
-    
-    
-    
-    if (activeSprite != null) {
-        g2.drawImage(activeSprite, playerX - cameraX + offsetX, playerY - cameraY + offsetY, null);
-    }
     // --- NEW: OAK UI OVERLAY ---
     // This draws the dialogue or starter menu ON TOP of the map/sprites
     if (currentState == GameState.OAK_DIALOGUE || currentState == GameState.STARTER_SELECT) {
@@ -757,40 +734,69 @@ protected void paintComponent(Graphics g) {
                 if (menuCursor < moves.size()) g.drawString(">", cursorX, cursorY);
             }
             else if (currentBattleMenu == BattleMenu.BAG_MENU) {
-    g.drawString("Items:", 70, 450);
-    g.drawRect(450, 400, 300, 150);
-    g.drawString("Pokéball", 500, 450); 
-    g.drawString("Potion", 500, 500);
+                g.drawString("Items:", 70, 450);
+                g.drawRect(450, 400, 300, 150);
+                g.drawString("Pokéball", 500, 450); 
+                g.drawString("Potion", 500, 500);
 
-    // Re-use menuCursor for moving up and down the list
-    int cursorY = (menuCursor == 0) ? 450 : 500;
-    g.drawString(">", 470, cursorY);
-}
-            else { 
-                g.drawString(battleMessage, 70, 450);
-                g.setFont(new Font("Arial", Font.PLAIN, 16));
-                g.drawString("Press ENTER to continue...", 70, 500);
+                // Re-use menuCursor for moving up and down the list
+                int cursorY = (menuCursor == 0) ? 450 : 500;
+                g.drawString(">", 470, cursorY);
             }
+                        else { 
+                            g.drawString(battleMessage, 70, 450);
+                            g.setFont(new Font("Arial", Font.PLAIN, 16));
+                            g.drawString("Press ENTER to continue...", 70, 500);
+                        }
+                    }
+                }
+                // --- DRAW OAK UI (Starters/Special Dialogue) ---
+                if (currentState == GameState.OAK_DIALOGUE || currentState == GameState.STARTER_SELECT) {
+                    oakHandler.draw(g2); 
+                }
+                // --- DRAW GENERIC DIALOGUE (Nurse/Townspeople) ---
+                else if (currentState == GameState.NURSE_MENU) {
+                    drawNurseUI(g2);
+                }
+}
+
+private int commandNum = 0; // 0 = Heal, 1 = Leave
+private void drawNurseUI(Graphics2D g2) {
+    // 1. Draw Background Box
+    g2.setColor(new Color(0, 0, 0, 200));
+    g2.fillRoundRect(50, SCREEN_HEIGHT - 160, SCREEN_WIDTH - 100, 120, 15, 15);
+    g2.setColor(Color.WHITE);
+    g2.setStroke(new BasicStroke(3));
+    g2.drawRoundRect(50, SCREEN_HEIGHT - 160, SCREEN_WIDTH - 100, 120, 15, 15);
+
+    // 2. Draw Nurse Text
+    g2.setFont(new Font("Arial", Font.BOLD, 20));
+    if(!nurseInteractionFinished)    {g2.drawString("Welcome! Would you like me to heal your Pokémon?", 80, SCREEN_HEIGHT - 110);}
+    else if(nurseInteractionFinished)    {g2.drawString("Your Pokémon are fighting fit! Take care!", 80, SCREEN_HEIGHT - 110);}
+
+    // 3. Draw Options
+    if(!nurseInteractionFinished){
+        String[] options = {"HEAL", "LEAVE"};
+        for (int i = 0; i < options.length; i++) {
+            int x = 100 + (i * 200);
+            int y = SCREEN_HEIGHT - 70;
+
+            if (i == commandNum) {
+                g2.setColor(Color.YELLOW); // Highlight current choice
+                g2.drawString(">", x - 25, y);
+            } else {
+                g2.setColor(Color.WHITE);
+            }
+            g2.drawString(options[i], x, y);
         }
+    } else {
+        // Show "Press ENTER to continue" like Oak does
+        g2.setFont(new Font("Arial", Font.ITALIC, 14));
+        g2.setColor(Color.WHITE);
+        g2.drawString("Press ENTER to continue...", 80, SCREEN_HEIGHT - 70);
     }
 }
 
-
-
-// Separate helper for Battle so it doesn't clutter the Overworld logic
-private void drawBattleScreen(Graphics2D g2) {
-    g2.setColor(Color.WHITE);
-    g2.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
-    
-    g2.setColor(Color.BLACK);
-    g2.setFont(new Font("Arial", Font.BOLD, 20));
-    g2.drawString(battleMessage, 50, SCREEN_HEIGHT - 100);
-    
-    if (playerPokemonImg != null) g2.drawImage(playerPokemonImg, 50, 250, null);
-    if (enemyPokemonImg != null) g2.drawImage(enemyPokemonImg, 500, 50, null);
-    
-    // You can add your Battle Menu drawing logic here!
-}
 public void startTrainerBattle(NPC trainer) {
     if (trainer.party.isEmpty()) return;
 
@@ -869,6 +875,14 @@ private void drawPlayer(Graphics2D g2, int offsetX, int offsetY) {
             lastTransitionTime = now;
         }
     }
+
+    public void healParty(List<Pokemon> party) {
+        System.out.println("heal");
+        for (Pokemon p : party) {
+            p.setHp(p.getMaxHp());
+        }
+    }
+
     private void triggerTrainerBattle(NPC trainer) {
     up = down = left = right = false; 
     if (myPokemon.isFainted()) myPokemon.heal(myPokemon.getMaxHp());
@@ -922,6 +936,32 @@ private void drawPlayer(Graphics2D g2, int offsetX, int offsetY) {
     @Override public void actionPerformed(ActionEvent e) { update(); repaint(); }
     
     @Override public void keyPressed(KeyEvent e) {
+    if (currentState == GameState.NURSE_MENU) {
+        if (!nurseInteractionFinished) {
+            // Navigation logic
+            if (e.getKeyCode() == KeyEvent.VK_A || e.getKeyCode() == KeyEvent.VK_LEFT) commandNum = 0;
+            if (e.getKeyCode() == KeyEvent.VK_D || e.getKeyCode() == KeyEvent.VK_RIGHT) commandNum = 1;
+
+            if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+                if (commandNum == 0) {
+                    // 1. HEAL THE POKEMON
+                    healParty(playerParty); 
+                    
+                    // 2. CHANGE THE TEXT
+                    nurseMessage = "Your Pokémon are fighting fit! Take care!";
+                    nurseInteractionFinished = true; // This hides the buttons
+                } else {
+                    currentState = GameState.OVERWORLD;
+                }
+            }
+        } else {
+            // If the interaction is finished, the next ENTER press exits the menu
+            if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+                currentState = GameState.OVERWORLD;
+                nurseInteractionFinished = false;
+            }
+        }
+    }
     if (currentState == GameState.OAK_DIALOGUE) {
         Pokemon gift = oakHandler.handleInput(e);
     if (gift != null) {
@@ -939,19 +979,6 @@ private void drawPlayer(Graphics2D g2, int offsetX, int offsetY) {
 
     // Standard Overworld logic
     if (currentState == GameState.OVERWORLD) {
-        if (e.getKeyCode() == KeyEvent.VK_E) {
-            for (NPC npc : npcList) {
-                if (isNear(npc)) {
-                    currentState = GameState.OAK_DIALOGUE; // Freeze the world
-    
-                    if (!hasStarter) {
-                        oakHandler.start(); // Runs the "Choose your Pokemon" code
-                    } else {
-                        oakHandler.startPostGiftDialogue("Take good care of your Pokemon!"); // Just shows text
-                    }
-                }
-            }
-        }
             int code = e.getKeyCode();
             if(e.getKeyCode() == KeyEvent.VK_W) up = true;
             if(e.getKeyCode() == KeyEvent.VK_S) down = true;
@@ -965,24 +992,39 @@ private void drawPlayer(Graphics2D g2, int offsetX, int offsetY) {
             }
 
             // --- CHANGE INTERACT TO E ---
-            if (e.getKeyCode() == KeyEvent.VK_E) {
-                if (currentState == GameState.OVERWORLD) {
+            if (code == KeyEvent.VK_E && currentState == GameState.OVERWORLD) {
                 for (NPC npc : npcList) {
-                    // Using the distance logic we added to your paintComponent
                     double dist = Math.sqrt(Math.pow(playerX - npc.x, 2) + Math.pow(playerY - npc.y, 2));
-            
+                    
                     if (dist < 64) {
-                        System.out.println("predded");
-                        triggerTrainerBattle(npc);
-                        break; 
-                    }
+                        if (npc.getType().equals("NURSE") && npc instanceof NurseNPC ) {
+                            NurseNPC nurse = (NurseNPC) npc;
+                            
+                            activeDialogueSet = nurse.getDialogue();
+                            dialogueIndex = 0;
+                            currentDialogueText = activeDialogueSet[dialogueIndex];
+                            
+                            currentState = GameState.NURSE_MENU; // Use the new generic state
+                        }
+                        else if (npc.getType().equals("TRAINER")){
+                            triggerTrainerBattle(npc);
+                            currentState = GameState.BATTLE;
+                        }
+                        else if (npc.getType().equals("OAK")) {
+                            currentState = GameState.OAK_DIALOGUE; // Freeze the world
             
-                }
+                            if (!hasStarter) {
+                                oakHandler.start(); // Runs the "Choose your Pokemon" code
+                            } else {
+                                oakHandler.startPostGiftDialogue("Take good care of your Pokemon!"); // Just shows text
+                            }
+                        }
+                    }
                 }
             }
 
             } 
-       else if (currentState == GameState.BATTLE) {
+        else if (currentState == GameState.BATTLE) {
             // --- 1. MENU NAVIGATION (W/A/S/D / Arrows) ---
             if (currentBattleMenu == BattleMenu.MAIN || currentBattleMenu == BattleMenu.FIGHT) {
                 if (e.getKeyCode() == KeyEvent.VK_W || e.getKeyCode() == KeyEvent.VK_UP) { if (menuCursor >= 2) menuCursor -= 2; }
@@ -1006,6 +1048,19 @@ private void drawPlayer(Graphics2D g2, int offsetX, int offsetY) {
             }
 
             // --- 2. ENTER KEY LOGIC ---
+            if (e.getKeyCode() == KeyEvent.VK_ENTER && (currentState == GameState.OAK_DIALOGUE)) {
+                    dialogueIndex++;
+                    
+                    if (activeDialogueSet != null && dialogueIndex < activeDialogueSet.length) {
+                        currentDialogueText = activeDialogueSet[dialogueIndex];
+                    } else {
+                        // End of conversation
+                        currentState = GameState.OVERWORLD;
+                        activeDialogueSet = null;
+                        dialogueIndex = 0;
+                    }
+                }
+            
             if (e.getKeyCode() == KeyEvent.VK_ENTER) {
                 if (currentBattleMenu == BattleMenu.START_MESSAGE) {
                     currentBattleMenu = BattleMenu.MAIN;
@@ -1141,6 +1196,7 @@ private void drawPlayer(Graphics2D g2, int offsetX, int offsetY) {
                     endBattle();
                 }
             }
+
             
             // --- 3. BACKSPACE LOGIC ---
             if (e.getKeyCode() == KeyEvent.VK_BACK_SPACE) {
@@ -1156,6 +1212,7 @@ private void drawPlayer(Graphics2D g2, int offsetX, int offsetY) {
                 }
             }
         }
+        
        }
 
  public void saveGame() {

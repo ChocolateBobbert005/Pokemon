@@ -1,0 +1,5 @@
+MAP_PATHS,T:\HS\Student\Computer Science\Software Engineering\TeamSeniorSlackers\PalletTown.png,T:\HS\Student\Computer Science\Software Engineering\TeamSeniorSlackers\PalletTownCollision.png
+PLAYER_POS,357,261
+POKEMON,Charmander,5,19
+POKEMON,Squirtle,5,19
+POKEMON,Bulbasaur,15,38

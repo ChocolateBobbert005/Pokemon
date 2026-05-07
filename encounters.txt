@@ -1,0 +1,41 @@
+Route_1, Pidgey, 50, Rattata, 50
+Route_2, Pidgey, 45, Rattata, 45, Caterpie, 5, Weedle, 5
+Route_3, Spearow, 45, Pidgey, 30, Nidoran-F, 15, Nidoran-M, 10
+Route_4, Rattata, 40, Spearow, 35, Ekans, 25
+Route_5, Pidgey, 40, Meowth, 35, Oddish, 25
+Route_6, Pidgey, 40, Meowth, 35, Oddish, 25
+Route_7, Pidgey, 40, Meowth, 35, Oddish, 25
+Route_8, Pidgey, 30, Meowth, 25, Ekans, 20, Sandshrew, 10, Growlithe, 10, Vulpix, 5
+Route_9, Rattata, 40, Spearow, 35, Ekans, 25
+Route_10, Spearow, 40, Voltorb, 35, Ekans, 25
+Route_11, Spearow, 40, Sandshrew, 25, Drowzee, 25, Ekans, 10
+Route_12, Oddish, 40, Pidgey, 30, Venonat, 20, Gloom, 10
+Route_13, Oddish, 40, Pidgey, 30, Venonat, 20, Gloom, 10
+Route_14, Oddish, 40, Pidgey, 30, Venonat, 20, Gloom, 10
+Route_15, Oddish, 40, Pidgey, 30, Venonat, 20, Gloom, 10
+Route_16, Rattata, 40, Doduo, 35, Spearow, 25
+Route_17, Doduo, 40, Spearow, 25, Raticate, 20, Fearow, 15
+Route_18, Doduo, 40, Spearow, 25, Raticate, 20, Fearow, 15
+Route_21, Pidgey, 60, Rattata, 30, Pidgeotto, 10
+Route_22, Rattata, 45, Spearow, 45, Nidoran-M, 5, Nidoran-F, 5
+Route_23, Spearow, 40, Ekans, 25, Arbok, 20, Fearow, 15
+Route_24, Pidgey, 40, Caterpie, 20, Weedle, 20, Oddish, 15, Kakuna, 5
+Route_25, Pidgey, 40, Caterpie, 20, Weedle, 20, Oddish, 15, Metapod, 5
+Viridian_Forest, Caterpie, 40, Weedle, 40, Metapod, 10, Kakuna, 5, Pikachu, 5
+Mt_Moon_1F, Zubat, 75, Geodude, 20, Paras, 5
+Mt_Moon_B1F, Zubat, 75, Geodude, 20, Paras, 5
+Mt_Moon_B2F, Zubat, 45, Geodude, 25, Paras, 15, Clefairy, 10, Onix, 5
+Digletts_Cave, Diglett, 95, Dugtrio, 5
+Rock_Tunnel_1F, Zubat, 50, Geodude, 30, Machop, 15, Onix, 5
+Rock_Tunnel_B1F, Zubat, 50, Geodude, 30, Machop, 15, Onix, 5
+Power_Plant, Magnemite, 35, Magneton, 25, Voltorb, 20, Pikachu, 10, Electabuzz, 5, Electrode, 5
+Pokemon_Mansion_1F, Koffing, 40, Rattata, 30, Growlithe, 20, Grimer, 10
+Pokemon_Mansion_2F, Koffing, 35, Rattata, 25, Growlithe, 20, Raticate, 10, Grimer, 10
+Pokemon_Mansion_3F, Koffing, 35, Rattata, 25, Growlithe, 20, Weezing, 10, Muk, 10
+Pokemon_Mansion_B1F, Koffing, 30, Rattata, 25, Growlithe, 20, Weezing, 15, Muk, 10
+Victory_Road_1F, Machoke, 30, Geodude, 20, Zubat, 20, Onix, 15, Arbok, 10, Marowak, 5
+Cerulean_Cave_1F, Magneton, 25, Kadabra, 20, Primeape, 15, Parasect, 15, Ditto, 10, Arbok, 15
+Safari_Zone_Center, Nidoran-M, 20, Nidoran-F, 20, Exeggcute, 20, Rhyhorn, 20, Venonat, 10, Nidorino, 4, Nidorina, 4, Chansey, 1, Scyther, 1
+Safari_Zone_Area_1, Exeggcute, 20, Nidoran-M, 20, Nidoran-F, 20, Doduo, 20, Paras, 10, Kangaskhan, 4, Nidorino, 4, Nidorina, 1, Scyther, 1
+Safari_Zone_Area_2, Rhyhorn, 20, Nidoran-M, 20, Nidoran-F, 20, Exeggcute, 20, Parasect, 10, Chansey, 4, Nidorino, 4, Nidorina, 1, Scyther, 1
+Safari_Zone_Area_3, Nidoran-M, 20, Nidoran-F, 20, Exeggcute, 20, Venonat, 20, Doduo, 10, Tauros, 4, Nidorino, 4, Nidorina, 1, Scyther, 1

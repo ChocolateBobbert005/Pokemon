@@ -1,0 +1,151 @@
+Bulbasaur, Tackle, 1, Growl, 1, Leech Seed, 7, Vine Whip, 10, Poison Powder, 15, Sleep Powder, 15, Razor Leaf, 20, Sweet Scent, 25, Growth, 32, Synthesis, 39, Solar Beam, 46
+Ivysaur, Tackle, 1, Growl, 1, Leech Seed, 1, Vine Whip, 1, Poison Powder, 15, Sleep Powder, 15, Razor Leaf, 22, Sweet Scent, 29, Growth, 38, Synthesis, 47, Solar Beam, 56 
+Venusaur, Tackle, 1, Growl, 1, Leech Seed, 1, Vine Whip, 1, Poison Powder, 1, Sleep Powder, 1, Razor Leaf, 22, Sweet Scent, 29, Growth, 41, Synthesis, 53, Solar Beam, 65 
+Charmander, Scratch, 1, Growl, 1, Ember, 7, Metal Claw, 13, Smokescreen, 19, Scary Face, 25, Flamethrower, 31, Slash, 37, Dragon Rage, 43, Fire Spin, 49 
+Charmeleon, Scratch, 1, Growl, 1, Ember, 1, Metal Claw, 1, Smokescreen, 1, Scary Face, 27, Flamethrower, 34, Slash, 41, Dragon Rage, 48, Fire Spin, 55 
+Charizard, Scratch, 1, Growl, 1, Ember, 1, Metal Claw, 1, Heat Wave, 1, Smokescreen, 1, Scary Face, 27, Flamethrower, 34, Wing Attack, 36, Slash, 44, Dragon Rage, 54, Fire Spin, 64 
+Squirtle, Tackle, 1, Tail Whip, 1, Bubble, 7, Withdraw, 13, Water Gun, 19, Bite, 25, Rapid Spin, 31, Protect, 37, Rain Dance, 43, Skull Bash, 49, Hydro Pump, 55 
+Wartortle, Tackle, 1, Tail Whip, 1, Bubble, 1, Withdraw, 1, Water Gun, 1, Bite, 27, Rapid Spin, 35, Protect, 43, Rain Dance, 51, Skull Bash, 59, Hydro Pump, 67 
+Blastoise, Tackle, 1, Tail Whip, 1, Bubble, 1, Withdraw, 1, Water Gun, 1, Bite, 27, Rapid Spin, 35, Protect, 45, Rain Dance, 55, Skull Bash, 65, Hydro Pump, 75 
+Caterpie, Tackle 1, String Shot, 1
+Metapod, Harden, 1, Harden, 7 
+Butterfree, Confusion, 1, Confusion, 10, Poison Powder, 13, Stun Spore, 14, Sleep Powder, 15, Gust, 18, Supersonic, 23, Whirlwind, 28, Silver Wind, 34, Psybeam, 40, Safeguard, 47 
+Weedle, Poison Sting, 1, String Shot, 1 
+Kakuna, Harden, 1, Harden, 7 
+Beedrill, Fury Attack, 1, Fury Attack, 10, Focus Energy, 13, Twineedle, 16, Rage, 20, Pursuit, 25, Pin Missile, 30, Agility, 35, Endeavor, 40 
+Pidgey, Tackle, 1, Sand Attack, 5, Gust, 9, Quick Attack, 13, Whirlwind, 19, Wing Attack, 25, Feather Dance, 31, Agility, 39, Mirror Move, 47 
+Pidgeotto, Tackle, 1, Sand Attack, 1, Gust, 1, Sand Attack, 5, Gust, 9, Quick Attack, 13, Whirlwind, 20, Wing Attack, 27, Feather Dance, 34, Agility, 43, Mirror Move, 52 
+Pidgeot, Tackle, 1, Sand Attack, 1, Gust, 1, Quick Attack, 1, Sand Attack, 5, Gust, 9, Quick Attack, 13, Whirlwind, 20, Wing Attack, 27, Feather Dance, 34, Agility, 48, Mirror Move, 62 
+Rattata, Tackle, 1, Tail Whip, 1, Quick Attack, 7, Focus Energy, 13, Hyper Fang, 20, Pursuit, 27, Super Fang, 34, Endeavor, 41 
+Raticate, Tackle, 1, Tail Whip, 1, Quick Attack, 1, Quick Attack, 7, Focus Energy, 13, Hyper Fang, 20, Scary Face, 20, Pursuit, 30, Super Fang, 40, Endeavor, 50 
+Spearow, Peck, 1, Growl, 1, Leer, 7, Fury Attack, 13, Pursuit, 19, Mirror Move, 25, Drill Peck, 31, Agility, 37 
+Fearow, Peck, 1, Growl, 1, Leer, 1, Leer, 7, Fury Attack, 13, Pursuit, 26, Mirror Move, 32, Drill Peck, 40, Agility, 47 
+Ekans, Wrap, 1, Leer, 1, Poison Sting, 8, Bite, 13, Glare, 20, Screech, 28, Acid, 35, Haze, 43
+Arbok, Wrap, 1, Leer, 1, Poison Sting, 1, Poison Sting, 8, Bite, 13, Glare, 20, Screech, 28, Acid, 38, Haze, 46 
+Pikachu, Thunder Shock, 1, Growl, 1, Tail Whip, 6, Thunder Wave, 11, Quick Attack, 16, Double Team, 20, Slam, 26, Thunderbolt, 33, Agility, 41, Thunder, 50
+Raichu, Thundershock, 1, Tail Whip, 1, Quick Attack, 1, Thunderbolt, 1 
+Sandshrew, Scratch, 1, Defense Curl, 6, Sand Attack, 11, Poison Sting, 17, Slash, 24, Swift, 33, Fury Swipes, 42, Sand Tomb, 52 
+Sandslash, Scratch, 1, Defense Curl, 1, Sand Attack, 1, Defense Curl, 6, Sand Attack, 11, Poison Sting, 17, Slash, 24, Swift, 33, Fury Swipes, 42, Sand Tomb, 52, Sandstorm, 62 
+Nidoran F, Growl, 1, Scratch, 1, Tail Whip, 7, Double Kick, 12, Poison Sting, 17, Bite, 20, Helping Hand, 23, Fury Swipes, 30, Flatter, 38, Crunch, 47 
+Nidorina, Growl, 1, Scratch, 1, Tail Whip, 1, Tail Whip, 7, Double Kick, 12, Poison Sting, 18, Bite, 22, Helping Hand, 26, Fury Swipes, 34, Flatter, 43, Crunch, 53 
+Nidoqueen, Scratch, 1, Tail Whip, 1, Double Kick, 1, Poison Sting, 1, Body Slam, 22, Superpower, 43 
+Nidoran M, Leer, 1, Peck, 1, Focus Energy, 7, Double Kick, 12, Poison Sting, 17, Horn Attack, 20, Helping Hand, 23, Fury Attack, 30, Flatter, 38, Horn Drill, 47 
+Nidorino, Leer, 1, Peck, 1, Focus Energy, 1, Focus Energy, 7, Double Kick, 12, Poison Sting, 18, Horn Attack, 22, Helping Hand, 26, Fury Attack, 34, Flatter, 43, Horn Drill, 53 
+Nidoking, Peck, 1, Focus Energy, 1, Double Kick, 1, Poison Sting, 1, Thrash, 22, Megahorn, 43 
+Clefairy, Pound, 1, Growl, 1, Encore, 5, Sing, 9, Double Slap, 13, Minimize, 17, Defense Curl, 21, Metronome, 25, Cosmic Power, 29, Moonlight, 33, Light Screen, 37, Meteor Mash, 41 
+Clefable, Sing, 1, Double Slap, 1, Minimize, 1, Metronome, 1 
+Vulpix, Ember, 1, Tail Whip, 5, Roar, 9, Quick Attack, 13, Will-O-Wisp, 17, Confuse Ray, 21, Imprison, 25, Flamethrower, 29, Safeguard, 33, Grudge, 37, Fire Spin, 41 
+Ninetales, Ember, 1, Tail Whip, 1, Quick Attack, 1, Confuse Ray, 1, Safeguard, 45 
+Jigglypuff, Sing, 1, Defense Curl, 4, Pound, 9, Disable, 14, Rollout, 19, Double Slap, 24, Rest, 29, Body Slam, 34, Mimic, 39, Hyper Voice, 44, Double-Edge, 49 
+Wigglytuff, Sing, 1, Defense Curl, 1, Pound, 1, Double Slap, 1 
+Zubat, Leech Life, 1, Astonish, 6, Supersonic, 11, Bite, 16, Wing Attack, 21, Confuse Ray, 26, Air Cutter, 31, Mean Look, 36, Poison Fang, 41, Haze, 46 
+Golbat, Leech Life, 1, Astonish, 1, Supersonic, 1, Leech Life, 1, Astonish, 6, Supersonic, 11, Bite, 16, Wing Attack, 21, Confuse Ray, 28, Air Cutter, 35, Mean Look, 42, Poison Fang, 49, Haze, 56 
+Oddish, Absorb, 1, Sweet Scent, 7, Poison Powder, 14, Stun Spore, 16, Sleep Powder, 18, Acid, 23, Moonlight, 32, Petal Dance, 39 
+Gloom, Absorb, 1, Sweet Scent, 1, Poison Powder, 1, Sweet Scent, 7, Poison Powder, 14, Stun Spore, 16, Sleep Powder, 18, Acid, 24, Moonlight, 35, Petal Dance, 44 
+Vileplume, Absorb, 1, Poison Powder, 1, Stun Spore, 1, Mega Drain, 1, Petal Dance, 44 
+Paras, Scratch, 1, Stun Spore, 7, Poison Powder, 13, Leech Life, 19, Spore, 25, Slash, 31, Growth, 37, Giga Drain, 43 
+Parasect, Scratch, 1, Stun Spore, 1, Poison Powder, 1, Stun Spore, 7, Poison Powder, 13, Leech Life, 19, Spore, 27, Slash, 35, Growth, 43, Giga Drain, 51 
+Venonat, Tackle, 1, Disable, 1, Foresight, 1, Supersonic, 9, Confusion, 17, Poison Powder, 20, Leech Life, 25, Stun Spore, 28, Psybeam, 33, Sleep Powder, 36, Psychic, 41 
+Venomoth, Tackle, 1, Disable, 1, Foresight, 1, Confusion, 1, Supersonic, 9, Confusion, 17, Poison Powder, 20, Leech Life, 25, Stun Spore, 28, Psybeam, 31, Silver Wind, 31, Sleep Powder, 38, Psychic, 45 
+Diglett, Scratch, 1, Sand Attack, 1, Growl, 5, Magnitude, 9, Dig, 17, Sand Tomb, 21, Slash, 25, Mud-Slap, 33, Earthquake, 41, Fissure, 49 
+Dugtrio, Scratch, 1, Sand Attack, 1, Growl, 1, Growl, 5, Magnitude, 9, Dig, 17, Sand Tomb, 21, Slash, 25, Sandstorm, 26, Mud-Slap, 38, Earthquake, 51, Fissure, 64 
+Meowth, Scratch, 1, Growl, 1, Bite, 11, Pay Day, 20, Faint Attack, 28, Screech, 35, Fury Swipes, 41, Slash, 46, Fake Out, 50 
+Persian, Scratch, 1, Growl, 1, Bite, 1, Bite, 11, Pay Day, 20, Faint Attack, 30, Screech, 40, Fury Swipes, 49, Slash, 57, Fake Out, 64 
+Psyduck, Water Sport, 1, Scratch, 1, Tail Whip, 5, Bubble, 10, Disable, 16, Confusion, 23, Screech, 31, Psych Up, 40, Fury Swipes, 50, Hydro Pump, 50 
+Golduck, Water Sport, 1, Scratch, 1, Tail Whip, 1, Bubble, 1, Tail Whip, 5, Bubble, 10, Disable, 16, Confusion, 23, Screech, 31, Psych Up, 44, Fury Swipes, 58, Hydro Pump, 58 
+Mankey, Scratch, 1, Leer, 1, Low Kick, 6, Karate Chop, 11, Fury Swipes, 16, Focus Energy, 21, Seismic Toss, 26, Cross Chop, 31, Swagger, 36, Screech, 41, Thrash, 46 
+Primeape, Scratch, 1, Leer, 1, Low Kick, 1, Rage, 1, Low Kick, 6, Karate Chop, 11, Fury Swipes, 16, Focus Energy, 21, Seismic Toss, 26, Rage, 28, Cross Chop, 35, Swagger, 44, Screech, 53, Thrash, 62 
+Growlithe, Bite, 1, Roar, 1, Ember, 7, Leer, 13, Odor Sleuth, 19, Helping Hand, 25, Flame Wheel, 31, Take Down, 37, Agility, 43, Flamethrower, 49 
+Arcanine, Bite, 1, Roar, 1, Ember, 1, Odor Sleuth, 1, ExtremeSpeed, 49 
+Poliwag, Bubble, 1, Hypnosis, 7, Water Gun, 13, Double Slap, 19, Rain Dance, 25, Body Slam, 31, Belly Drum, 37, Hydro Pump, 43 
+Poliwhirl, Bubble, 1, Hypnosis, 1, Water Gun, 1, Hypnosis, 7, Water Gun, 13, Double Slap, 19, Rain Dance, 27, Body Slam, 35, Belly Drum, 43, Hydro Pump, 51
+Poliwrath, Bubble, 1, Hypnosis, 1, Water Gun, 1, Double Slap, 1, Submission, 35, Mind Reader, 51 
+Abra, Teleport, 1 
+Kadabra, Teleport, 1, Kinesis, 1, Confusion, 16, Disable, 18, Psybeam, 21, Reflect, 23, Recover, 25, Future Sight, 30, Role Play, 33, Psychic, 36, Trick, 43 
+Alakazam, Teleport, 1, Kinesis, 1, Confusion, 1, Confusion, 16, Disable, 18, Psybeam, 21, Reflect, 23, Recover, 25, Future Sight, 30, Calm Mind, 33, Psychic, 36, Trick, 43 
+Machop, Low Kick, 1, Leer, 1, Focus Energy, 7, Karate Chop, 13, Seismic Toss, 19, Foresight, 22, Vital Throw, 25, Revenge, 31, Scary Face, 37, Submission, 40, Cross Chop, 46, Scary Face, 48 
+Machoke, Low Kick, 1, Leer, 1, Focus Energy, 1, Focus Energy, 7, Karate Chop, 13, Seismic Toss, 19, Foresight, 22, Vital Throw, 25, Revenge, 33, Scary Face, 41, Submission, 46, Cross Chop, 54, Scary Face, 58 
+Machamp, Low Kick, 1, Leer, 1, Focus Energy, 1, Focus Energy, 7, Karate Chop, 13, Seismic Toss, 19, Foresight, 22, Vital Throw, 25, Revenge, 33, Scary Face, 41, Submission, 46, Cross Chop, 54, Scary Face, 58 
+Bellsprout, Vine Whip, 1, Growth, 6, Wrap, 11, Sleep Powder, 15, Poison Powder, 17, Stun Spore, 19, Acid, 23, Sweet Scent, 30, Razor Leaf, 37, Slam, 45 
+Weepinbell, Vine Whip, 1, Growth, 1, Wrap, 1, Growth, 6, Wrap, 11, Sleep Powder, 15, Poison Powder, 17, Stun Spore, 19, Acid, 24, Sweet Scent, 33, Razor Leaf, 42, Slam, 54 
+Victreebel, Stockpile, 1, Spit Up, 1, Swallow, 1, Vine Whip, 1, Sleep Powder, 1, Sweet Scent, 1, Razor Leaf, 1 
+Tentacool, Poison Sting, 1, Constrict, 6, Acid, 12, Supersonic, 19, Bubble Beam, 25, Barrier, 30, Water Pulse, 35, Hydro Pump, 43 
+Tentacruel, Poison Sting, 1, Constrict, 1, Acid, 1, Constrict, 6, Acid, 12, Supersonic, 19, Bubble Beam, 25, Barrier, 30, Water Pulse, 38, Hydro Pump, 50 
+Geodude, Tackle, 1, Defense Curl, 1, Mud Sport, 6, Rock Throw, 11, Magnitude, 16, Self-Destruct, 21, Rollout, 26, Rock Blast, 31, Earthquake, 36, Explosion, 41, Double-Edge, 46 
+Graveler, Tackle, 1, Defense Curl, 1, Mud Sport, 1, Mud Sport, 6, Rock Throw, 11, Magnitude, 16, Self-Destruct, 21, Rollout, 29, Rock Blast, 37, Earthquake, 45, Explosion, 53, Double-Edge, 62 
+Golem, Tackle, 1, Defense Curl, 1, Mud Sport, 1, Rock Throw, 1, Mud Sport, 6, Rock Throw, 11, Magnitude, 16, Self-Destruct, 21, Rollout, 29, Rock Blast, 37, Earthquake, 45, Explosion, 53, Double-Edge, 62 
+Ponyta, Tackle, 1, Growl, 5, Tail Whip, 10, Ember, 14, Flame Wheel, 19, Stomp, 23, Fire Spin, 28, Take Down, 32, Agility, 37, Bounce, 41, Fire Blast, 46 
+Rapidash, Tackle, 1, Growl, 1, Tail Whip, 1, Ember, 1, Growl, 5, Tail Whip, 10, Ember, 14, Flame Wheel, 19, Stomp, 23, Fire Spin, 28, Take Down, 32, Agility, 37, Fury Attack, 40, Bounce, 47, Fire Blast, 55 
+Slowpoke, Curse, 1, Yawn, 1, Tackle, 1, Growl, 6, Water Gun, 13, Confusion, 17, Disable, 24, Headbutt, 29, Amnesia, 36, Psychic, 41, Psych Up, 48 
+Slowbro, Curse, 1, Yawn, 1, Tackle, 1, Growl, 1, Growl, 6, Water Gun, 13, Confusion, 17, Disable, 24, Headbutt, 29, Withdraw, 37, Amnesia, 44, Psychic, 51, Psych Up, 60 
+Magnemite, Metal Sound, 1, Tackle, 1, Thundershock, 6, Supersonic, 11, Sonic Boom, 16, Thunder Wave, 21, Spark, 26, Lock-On, 32, Swift, 38, Scream, 44, Zap Cannon, 50 
+Magneton, Metal Sound, 1, Tackle, 1, Thundershock, 1, Supersonic, 1, Thundershock, 6, Supersonic, 11, Sonic Boom, 16, Thunder Wave, 21, Spark, 26, Lock-On, 35, Tri Attack, 35, Swift, 44, Screech, 53, Zap Cannon, 62 
+Farfetch'd, Peck, 1, Sand Attack, 6, Leer, 11, Fury Attack, 16, Knock Off, 21, Fury Cutter, 26, Swords Dance, 31, Agility, 36, Slash, 41, False Swipe, 46 
+Doduo, Peck, 1, Growl, 1, Pursuit, 9, Fury Attack, 13, Tri Attack, 21, Rage, 25, Drill Peck, 33, Agility, 37 
+Dodrio, Peck, 1, Growl, 1, Pursuit, 1, Pursuit, 9, Fury Attack, 13, Tri Attack, 21, Rage, 25, Drill Peck, 38, Agility, 47 
+Seel, Headbutt, 1, Growl, 9, Icy Wind, 17, Aurora Beam, 21, Rest, 29, Take Down, 37, Ice Beam, 41, Safeguard, 49 
+Dewgong, Headbutt, 1, Growl, 1, Icy Wind, 1, Signal Beam, 1, Growl, 9, Icy Wind, 17, Aurora Beam, 21, Rest, 29, Sheer Cold, 34, Take Down, 42, Ice Beam, 51, Safeguard, 64 
+Grimer, Pound, 1, Poison Gas, 1, Harden, 4, Mud-Slap, 8, Disable, 13, Sludge, 19, Minimize, 26, Screech, 34, Acid Armor, 43, Sludge Bomb, 53 
+Muk, Pound, 1, Poison Gas, 1, Harden, 1, Harden, 4, Mud-Slap, 8, Disable, 13, Sludge, 19, Minimize, 26, Screech, 34, Acid Armor, 45, Sludge Bomb, 58 
+Shellder, Tackle, 1, Withdraw, 1, Supersonic, 9, Aurora Beam, 17, Protect, 25, Leer, 33, Clamp, 41, Ice Beam, 49 
+Cloyster, Withdraw, 1, Supersonic, 1, Aurora Beam, 1, Protect, 1, Spikes, 1 
+Gastly, Hypnosis, 1, Lick, 1, Spite, 8, Mean Look, 13, Curse, 16, Night Shade, 21, Confuse Ray, 28, Dream Eater, 33, Destiny Bond, 36 
+Haunter, Hypnosis, 1, Lick, 1, Spite, 1, Spite, 8, Mean Look, 13, Curse, 16, Night Shade, 21, Confuse Ray, 31, Dream Eater, 39, Destiny Bond, 45 
+Gengar, Hypnosis, 1, Lick, 1, Spite, 1, Spite, 8, Mean Look, 13, Curse, 16, Night Shade, 21, Confuse Ray, 31, Dream Eater, 39, Destiny Bond, 45 
+Onix, Tackle, 1, Screech, 1, Bind, 1, Rock Throw, 9, Harden, 13, Rage, 21, Dragon Breath, 25, Sandstorm, 33, Slam, 37, Iron Tail, 45, Double-Edge, 49 
+Drowzee, Pound, 1, Hypnosis, 1, Disable, 7, Confusion, 11, Headbutt, 17, Poison Gas, 21, Meditate, 27, Psychic, 31, Psych Up, 37, Future Sight, 41 
+Hypno, Pound, 1, Hypnosis, 1, Disable, 1, Confusion, 1, Disable, 7, Confusion, 11, Headbutt, 17, Poison Gas, 21, Meditate, 27, Psychic, 35, Psych Up, 43, Future Sight, 51 
+Krabby, Bubble, 1, Leer, 5, Vice Grip, 12, Guillotine, 16, Harden, 23, Crabhammer, 27, Protect, 34, Stomp, 38, Flail, 45 
+Kingler, Bubble, 1, Leer, 1, Vice Grip, 1, Leer, 5, Vice Grip, 12, Guillotine, 16, Harden, 23, Crabhammer, 27, Protect, 38, Stomp, 46, Flail, 57 
+Voltorb, Charge, 1, Tackle, 1, Screech, 8, Sonic Boom, 15, Spark, 21, Self-Destruct, 27, Rollout, 34, Light Screen, 41, Swift, 48, Explosion, 54, Mirror Coat, 59 
+Electrode, Charge, 1, Tackle, 1, Screech, 1, Sonic Boom, 1, Screech, 8, Sonic Boom, 15, Spark, 21, Self-Destruct, 27, Rollout, 34, Light Screen, 41, Swift, 48, Explosion, 54, Mirror Coat, 59 
+Exeggcute, Barrage, 1, Uproar, 1, Hypnosis, 1, Reflect, 7, Leech Seed, 13, Confusion, 19, Stun Spore, 25, Poison Powder, 31, Sleep Powder, 37, Solar Beam, 43 
+Exeggutor, Barrage, 1, Hypnosis, 1, Confusion, 1, Stomp, 19, Egg Bomb, 31 
+Cubone, Growl, 1, Tail Whip, 5, Bone Club, 9, Headbutt, 13, Leer, 17, Focus Energy, 21, Bonemerang, 25, Rage, 29, False Swipe, 33, Thrash, 37, Bone Rush, 41, Double-Edge, 45 
+Marowak, Growl, 1, Tail Whip, 1, Bone Club, 1, Tail Whip, 5, Bone Club, 9, Headbutt, 13, Leer, 17, Focus Energy, 21, Bonemerang, 25, Rage, 32, False Swipe, 39, Thrash, 46, Bone Rush, 53, Double-Edge, 61 
+Hitmonlee, Revenge, 1, Double Kick, 1, Meditate, 6, Rolling Kick, 11, Jump Kick, 16, Brick Break, 21, Focus Energy, 26, Hi Jump Kick, 31, Mind Reader, 36, Foresight, 41, Endure, 46, Mega Kick, 51, Reversal, 56 
+Hitmonchan, Revenge, 1, Comet Punch, 1, Agility, 7, Pursuit, 13, Mach Punch, 20, Fire Punch, 26, Ice Punch, 26, Thunder Punch, 26, Sky Uppercut, 32, Mega Punch, 38, Detect, 44, Counter, 50 
+Lickitung, Lick, 1, Supersonic, 7, Defense Curl, 12, Knock Off, 18, Stomp, 23, Disable, 29, Slam, 34, Screech, 40, Refresh, 45 
+Koffing, Poison Gas, 1, Tackle, 1, Smog, 9, Self-Destruct, 17, Sludge, 21, Smokescreen, 25, Haze, 33, Explosion, 41, Destiny Bond, 45, Memento, 49 
+Weezing, Poison Gas, 1, Tackle, 1, Smog, 1, Smog, 9, Self-Destruct, 17, Sludge, 21, Smokescreen, 25, Haze, 33, Explosion, 44, Destiny Bond, 51, Memento, 58 
+Rhyhorn, Horn Attack, 1, Tail Whip, 1, Stomp, 10, Fury Attack, 15, Scary Face, 24, Rock Blast, 29, Horn Drill, 38, Take Down, 43, Earthquake, 52, Megahorn, 57
+Rhydon, Horn Attack, 1, Tail Whip, 1, Stomp, 1, Stomp, 10, Fury Attack, 15, Scary Face, 24, Rock Blast, 29, Horn Drill, 38, Take Down, 46, Earthquake, 58, Megahorn, 66 
+Chansey, Pound, 1, Growl, 1, Tail Whip, 5, Refresh, 9, Softboiled, 13, Double Slap, 17, Minimize, 23, Sing, 29, Egg Bomb, 35, Defense Curl, 41, Light Screen, 49, Double-Edge, 57 
+Tangela, Ingrain, 1, Constrict, 1, Sleep Powder, 4, Absorb, 8, Vine Whip, 13, Poison Powder, 17, Stun Spore, 20, Mega Drain, 25, Growth, 29, Knock Off, 34, Slam, 38, Tickle, 43 
+Kangaskhan, Comet Punch, 1, Leer, 1, Bite, 7, Tail Whip, 13, Fake Out, 19, Mega Punch, 25, Rage, 31, Endure, 37, Dizzy Punch, 43, Reversal, 49 
+Horsea, Bubble, 1, Leer, 8, Water Gun, 15, Twister, 22, Agility, 29, Hydro Pump, 36, Dragon Dance, 43 
+Seadra, Bubble, 1, Leer, 1, Water Gun, 1, Leer, 8, Water Gun, 15, Twister, 22, Agility, 29, Hydro Pump, 40, Dragon Dance, 51 
+Goldeen, Peck, 1, Tail Whip, 1, Water Sport, 1, Supersonic, 10, Horn Attack, 15, Flail, 24, Aqua Ring, 29, Fury Attack, 38, Waterfall, 43, Horn Drill, 52, Agility, 57 
+Seaking, Peck, 1, Tail Whip, 1, Water Sport, 1, Supersonic, 10, Horn Attack, 15, Flail, 24, Aqua Ring, 29, Fury Attack, 41, Waterfall, 49, Horn Drill, 61, Agility, 69 
+Staryu, Tackle, 1, Harden, 1, Water Gun, 6, Rapid Spin, 10, Recover, 15, Swift, 19, Bubble Beam, 24, Minimize, 28, Light Screen, 33, Cosmic Power, 37, Hydro Pump, 42 
+Starmie, Water Gun, 1, Rapid Spin, 1, Recover, 1, Swift, 1, Confuse Ray, 33 
+Mr. Mime, Barrier, 1, Confusion, 1, Substitute, 5, Meditate, 9, Double Slap, 13, Reflect, 17, Light Screen, 17, Encore, 21, Psybeam, 25, Recycle, 29, Trick, 33, Role Play, 37, Psychic, 41, Baton Pass, 45, Safeguard, 49 
+Scyther, Quick Attack, 1, Leer, 1, Focus Energy, 6, Pursuit, 11, False Swipe, 16, Agility, 21, Wing Attack, 26, Slash, 31, Swords Dance, 36, Double Team, 41, Fury Cutter, 46 
+Jynx, Pound, 1, Lick, 1, Lovely Kiss, 1, Powder Snow, 1, Lick, 9, Lovely Kiss, 13, Powder Snow, 17, Double Slap, 21, Ice Punch, 25, Mean Look, 30, Fake Tears, 35, Body Slam, 41, Perish Song, 48, Blizzard, 56 
+Electabuzz, Quick Attack, 1, Leer, 1, Thunder Punch, 1, Thunder Shock, 9, Light Screen, 17, Swift, 25, Screech, 36, Thunderbolt, 47, Thunder, 58 
+Magmar, Ember, 1, Leer, 1, Smog, 1, Fire Punch, 1, Leer, 7, Smog, 13, Fire Punch, 19, Confuse Ray, 25, Fire Blast, 33, Flamethrower, 41, Sunny Day, 49 
+Pinsir, Vice Grip, 1, Focus Energy, 1, Bind, 7, Seismic Toss, 13, Harden, 19, Revenge, 25, Brick Break, 31, Guillotine, 37, Submission, 43, Swords Dance, 49 
+Tauros, Tackle, 1, Tail Whip, 1, Rage, 4, Horn Attack, 8, Scary Face, 13, Pursuit, 19, Swagger, 26, Take Down, 34, Thrash, 43, Double-Edge, 53 
+Magikarp, Splash, 1, Tackle, 15, Flail, 30 
+Gyarados, Thrash, 1, Bite, 20, Dragon Rage, 25, Leer, 30, Twister, 35, Hydro Pump, 40, Rain Dance, 45, Dragon Dance, 50, Hyper Beam, 55 
+Lapras, Water Gun, 1, Growl, 1, Sing, 1, Mist, 7, Body Slam, 13, Confuse Ray, 19, Perish Song, 25, Ice Beam, 31, Rain Dance, 37, Safeguard, 43, Hydro Pump, 49, Sheer Cold, 55 
+Ditto, Transform, 1 
+Eevee, Tackle, 1, Tail Whip, 1, Helping Hand, 1, Sand Attack, 8, Growl, 16, Quick Attack, 23, Bite, 30, Baton Pass, 36, Take Down, 42 
+Vaporeon, Tackle, 1, Tail Whip, 1, Helping Hand, 1, Sand Attack, 8, Water Gun, 16, Quick Attack, 23, Bite, 30, Aurora Beam, 36, Haze, 42, Acid Armor, 47, Hydro Pump, 52 
+Jolteon, Tackle, 1, Tail Whip, 1, Helping Hand, 1, Sand Attack, 8, Thunder Shock, 16, Quick Attack, 23, Bite, 30, Double Kick, 36, Agility, 42, Thunder Wave, 47, Thunder, 52 
+Flareon, Tackle, 1, Tail Whip, 1, Helping Hand, 1, Sand Attack, 8, Ember, 16, Quick Attack, 23, Bite, 30, Fire Spin, 36, Smog, 42, Leer, 47, Flamethrower, 52 
+Porygon, Conversion, 1, Conversion 2, 1, Tackle, 1, Sharpen, 1, Psybeam, 9, Agility, 12, Recover, 20, Recycle, 24, Tri Attack, 32, Magic Coat, 36, Zap Cannon, 44, Lock-On, 48 
+Omanyte, Constrict, 1, Withdraw, 1, Bite, 13, Water Gun, 19, Mud Shot, 25, Leer, 31, Protect, 37, Tickle, 43, Ancient Power, 49, Hydro Pump, 55 
+Omastar, Constrict, 1, Withdraw, 1, Bite, 1, Water Gun, 1, Bite, 13, Water Gun, 19, Mud Shot, 25, Leer, 31, Protect, 37, Tickle, 40, Ancient Power, 54, Hydro Pump, 67 
+Kabuto, Scratch, 1, Harden, 1, Absorb, 13, Leer, 19, Mud Shot, 25, Sand Attack, 31, Endure, 37, Metal Sound, 43, Ancient Power, 49, Hydro Pump, 55 
+Kabutops, Scratch, 1, Harden, 1, Absorb, 1, Leer, 1, Absorb, 13, Leer, 19, Mud Shot, 25, Sand Attack, 31, Endure, 37, Metal Sound, 40, Ancient Power, 54, Hydro Pump, 65 
+Aerodactyl, Wing Attack, 1, Agility, 1, Bite, 8, Supersonic, 15, Ancient Power, 22, Scary Face, 29, Take Down, 36, Hyper Beam, 43 
+Snorlax, Tackle, 1, Amnesia, 5, Defense Curl, 9, Belly Drum, 13, Headbutt, 17, Yawn, 21, Rest, 25, Snore, 29, Body Slam, 33, Block, 37, Covet, 41, Rollout, 45, Hyper Beam, 49 
+Articuno, Gust, 1, Powder Snow, 1, Mist, 13, Agility, 25, Mind Reader, 37, Ice Beam, 49, Reflect, 61, Blizzard, 73, Sheer Cold, 85 
+Zapdos, Peck, 1, Thunder Shock, 1, Thunder Wave, 13, Agility, 25, Detect, 37, Drill Peck, 49, Charge, 61, Light Screen, 73, Thunder, 85 
+Moltres, Wing Attack, 1, Ember, 1, Fire Spin, 13, Agility, 25, Endure, 37, Flamethrower, 49, Safeguard, 61, Heat Wave, 73, Sky Attack, 85 
+Dratini, Wrap, 1, Leer, 1, Thunder Wave, 8, Twister, 15, Dragon Rage, 22, Slam, 29, Agility, 36, Safeguard, 43, Dragon Dance, 50, Outrage, 57, Hyper Beam, 64 
+Dragonair, Wrap, 1, Leer, 1, Thunder Wave, 1, Twister, 1, Thunder Wave, 8, Twister, 15, Dragon Rage, 22, Slam, 29, Agility, 38, Safeguard, 47, Dragon Dance, 56, Outrage, 65, Hyper Beam, 74 
+Dragonite, Wrap, 1, Leer, 1, Thunder Wave, 1, Twister, 1, Thunder Wave, 8, Twister, 15, Dragon Rage, 22, Slam, 29, Agility, 38, Safeguard, 47, Dragon Dance, 55, Wing Attack, 55, Outrage, 67, Hyper Beam, 79 
+Mewtwo, Confusion, 1, Disable, 1, Barrier, 11, Swift, 22, Future Sight, 33, Psych Up, 44, Recover, 55, Psychic, 66, Barrier, 77, Amnesia, 88, Safeguard, 99 
+Mew, Pound, 1, Transform, 10, Mega Punch, 20, Metronome, 30, Psychic, 40, Ancient Power, 50

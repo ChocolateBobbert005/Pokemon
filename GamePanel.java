@@ -32,7 +32,7 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
 
     // ===== PLAYER =====
     private int playerX, playerY;
-    private final int PLAYER_SIZE = 36;
+    private final int PLAYER_SIZE = 40;
     private final int SPEED = 4;
     private int cameraX, cameraY;
 
@@ -157,20 +157,33 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
 
     private void loadPlayerSprites() {
         try {
-            String path = "T:\\HS\\Student\\Computer Science\\Software Engineering\\TeamSeniorSlackers\\";
-            playerUp = scaleSquare(ImageIO.read(new File(path + "boy_up.png")), PLAYER_SIZE);
-            playerDown = scaleSquare(ImageIO.read(new File(path + "boy_down.png")), PLAYER_SIZE);
-            playerLeft = scaleSquare(ImageIO.read(new File(path + "boy_left.png")), PLAYER_SIZE);
-            playerRight = scaleSquare(ImageIO.read(new File(path + "boy_right.png")), PLAYER_SIZE);
-            playerDown1 = scaleSquare(ImageIO.read(new File(path + "BoyWalkDown1.png")), PLAYER_SIZE);
-            playerDown2 = scaleSquare(ImageIO.read(new File(path + "BoyWalkDown2.png")), PLAYER_SIZE);
-            playerUp1 = scaleSquare(ImageIO.read(new File(path + "BoyWalkUp1.png")), PLAYER_SIZE);
-            playerUp2 = scaleSquare(ImageIO.read(new File(path + "BoyWalkUp2.png")), PLAYER_SIZE);
-            playerLeft1 = scaleSquare(ImageIO.read(new File(path + "BoyWalkLeft1.png")), PLAYER_SIZE);
-            playerLeft2 = scaleSquare(ImageIO.read(new File(path + "BoyWalkLeft2.png")), PLAYER_SIZE);
-            playerRight1 = scaleSquare(ImageIO.read(new File(path + "BoyWalkRight1.png")), PLAYER_SIZE);
-            playerRight2= scaleSquare(ImageIO.read(new File(path + "BoyWalkRight2.png")), PLAYER_SIZE);
+            // String path = "T:\\HS\\Student\\Computer Science\\Software Engineering\\TeamSeniorSlackers\\";
+            // playerUp = scaleSquare(ImageIO.read(new File(path + "boy_up.png")), PLAYER_SIZE);
+            // playerDown = scaleSquare(ImageIO.read(new File(path + "boy_down.png")), PLAYER_SIZE);
+            // playerLeft = scaleSquare(ImageIO.read(new File(path + "boy_left.png")), PLAYER_SIZE);
+            // playerRight = scaleSquare(ImageIO.read(new File(path + "boy_right.png")), PLAYER_SIZE);
+            // playerDown1 = scaleSquare(ImageIO.read(new File(path + "BoyWalkDown1.png")), PLAYER_SIZE);
+            // playerDown2 = scaleSquare(ImageIO.read(new File(path + "BoyWalkDown2.png")), PLAYER_SIZE);
+            // playerUp1 = scaleSquare(ImageIO.read(new File(path + "BoyWalkUp1.png")), PLAYER_SIZE);
+            // playerUp2 = scaleSquare(ImageIO.read(new File(path + "BoyWalkUp2.png")), PLAYER_SIZE);
+            // playerLeft1 = scaleSquare(ImageIO.read(new File(path + "BoyWalkLeft1.png")), PLAYER_SIZE);
+            // playerLeft2 = scaleSquare(ImageIO.read(new File(path + "BoyWalkLeft2.png")), PLAYER_SIZE);
+            // playerRight1 = scaleSquare(ImageIO.read(new File(path + "BoyWalkRight1.png")), PLAYER_SIZE);
+            // playerRight2= scaleSquare(ImageIO.read(new File(path + "BoyWalkRight2.png")), PLAYER_SIZE);
             
+            playerUp = scaleSquare(ImageIO.read(new File("C:\\Users\\Lemkcar\\Downloads\\PlayerUp.png")), PLAYER_SIZE);
+            playerDown = scaleSquare(ImageIO.read(new File("C:\\Users\\Lemkcar\\Downloads\\PlayerDown.png")), PLAYER_SIZE);
+            playerLeft = scaleSquare(ImageIO.read(new File("C:\\Users\\Lemkcar\\Downloads\\PlayerLeft.png")), PLAYER_SIZE);
+            playerRight = scaleSquare(ImageIO.read(new File("C:\\Users\\Lemkcar\\Downloads\\PlayerRight.png")), PLAYER_SIZE);
+            playerDown1 = scaleSquare(ImageIO.read(new File("C:\\Users\\Lemkcar\\Downloads\\PlayerWalkDown1.png")), PLAYER_SIZE);
+            playerDown2 = scaleSquare(ImageIO.read(new File("C:\\Users\\Lemkcar\\Downloads\\PlayerWalkDown2.png")), PLAYER_SIZE-2);
+            playerUp1 = scaleSquare(ImageIO.read(new File("C:\\Users\\Lemkcar\\Downloads\\PlayerWalkUp1.png")), PLAYER_SIZE);
+            playerUp2 = scaleSquare(ImageIO.read(new File("C:\\Users\\Lemkcar\\Downloads\\PlayerWalkUp2.png")), PLAYER_SIZE);
+            playerLeft1 = scaleSquare(ImageIO.read(new File("C:\\Users\\Lemkcar\\Downloads\\PlayerWalkLeft1.png")), PLAYER_SIZE);
+            playerLeft2 = scaleSquare(ImageIO.read(new File("C:\\Users\\Lemkcar\\Downloads\\PlayerWalkLeft2.png")), PLAYER_SIZE);
+            playerRight1 = scaleSquare(ImageIO.read(new File("C:\\Users\\Lemkcar\\Downloads\\PlayerWalkRight1.png")), PLAYER_SIZE);
+            playerRight2= scaleSquare(ImageIO.read(new File("C:\\Users\\Lemkcar\\Downloads\\PlayerWalkRight2.png")), PLAYER_SIZE);
+
         } catch (IOException e) {
             System.err.println("Sprite Load Failed: " + e.getMessage());
         }
@@ -272,13 +285,13 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
         if (!(up || down || left || right)) return;
 
         int checkX = playerX + PLAYER_SIZE / 2;
-        int checkY = playerY + PLAYER_SIZE - 5; 
+        int checkY = playerY + PLAYER_SIZE - 5;    
 
         if (checkX < 0 || checkY < 0 || checkX >= WORLD_WIDTH || checkY >= WORLD_HEIGHT) return;
 
         int pixelColor = collisionMap.getRGB(checkX, checkY) & 0xFFFFFF;
 
-        if (pixelColor == ENCOUNTER_COLOR) {
+        if (pixelColor == ENCOUNTER_COLOR && playerParty.size() > 0) {
             if (Math.random() < ENCOUNTER_CHANCE) {
                 triggerEncounter();
             }
@@ -288,7 +301,7 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
     private void triggerEncounter() {
         up = down = left = right = false; 
         
-        if (myPokemon.isFainted()) myPokemon.heal(myPokemon.getMaxHp());
+
 
         String[] possible = {"Pidgey", "Rattata", "Caterpie"};
         String enemyName = possible[(int)(Math.random() * possible.length)];
@@ -381,12 +394,12 @@ public void refreshNPCs(String currentMapPath) {
 private BufferedImage loadAndScaleNPCSprite(String path) {
     try {
         BufferedImage img = ImageIO.read(new File(path));
-        BufferedImage scaled = new BufferedImage(PLAYER_SIZE, PLAYER_SIZE + 7, BufferedImage.TYPE_INT_ARGB);
+        BufferedImage scaled = new BufferedImage(PLAYER_SIZE, PLAYER_SIZE, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g2 = scaled.createGraphics();
         
         // Use Nearest Neighbor to keep the pixel art sharp
         g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
-        g2.drawImage(img, 0, 0, PLAYER_SIZE, PLAYER_SIZE + 7, null);
+        g2.drawImage(img, 0, 0, PLAYER_SIZE, PLAYER_SIZE, null);
         g2.dispose();
         
         return scaled;
@@ -885,7 +898,7 @@ private void drawPlayer(Graphics2D g2, int offsetX, int offsetY) {
 
     private void triggerTrainerBattle(NPC trainer) {
     up = down = left = right = false; 
-    if (myPokemon.isFainted()) myPokemon.heal(myPokemon.getMaxHp());
+   
     
     currentTrainerParty = new ArrayList<>();
     String targetName = trainer.name; // Assuming your NPC class has a 'name' field
@@ -1189,10 +1202,6 @@ private void drawPlayer(Graphics2D g2, int offsetX, int offsetY) {
                     }
                 }
                 else if (currentBattleMenu == BattleMenu.END_MESSAGE) {
-                    if (myPokemon.isFainted()) { 
-                        for (Pokemon p : playerParty) p.heal(p.getMaxHp()); 
-                        centerSpawnSafe(); 
-                    }
                     endBattle();
                 }
             }
@@ -1232,7 +1241,7 @@ private void drawPlayer(Graphics2D g2, int offsetX, int offsetY) {
 
     try {
         // 4. Combine your safe folder path with your new custom file name!
-        String basePath = "C:\\Users\\WainBra\\Documents\\GitCode\\Pokemon\\";
+        String basePath = "C:\\Users\\Lemkcar\\Documents\\GitCode\\Pokemon\\";
         String filePath = basePath + saveName;
         
         PrintWriter writer = new PrintWriter(new FileWriter(filePath));

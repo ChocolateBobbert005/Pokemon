@@ -50,7 +50,7 @@ public void gainExp(int amount) {
     System.out.println(this.name + " gained " + amount + " EXP!");
 
     // Calculate how much total EXP is needed for the NEXT level
-    int expNeeded = (this.level + 1) * (this.level + 1) ;
+    int expNeeded = (this.level + 1) * (this.level + 1) * (this.level + 1) ;
 
     // Keep leveling up as long as we have enough EXP (in case they gain multiple levels at once)
     while (this.currentExp >= expNeeded) {

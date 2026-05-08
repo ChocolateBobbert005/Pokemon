@@ -102,6 +102,9 @@ private void levelUp() {
         if (currentHP > maxHP) currentHP = maxHP;
     }
 
+    public void setHp(int amount){
+        currentHP = amount;
+    }
     public boolean isFainted() {
         return currentHP <= 0;
     }

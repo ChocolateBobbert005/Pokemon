@@ -7,7 +7,7 @@ public class TrainerNPC extends NPC {
 
     public TrainerNPC(String name, int x, int y, int size, BufferedImage sprite, String challengeMessage) {
         // 'super' sends the location and sprite up to the regular NPC class
-        super(name, x, y, size, sprite);
+        super("TRAINER", name, x, y, size, sprite);
         
         // This automatically pulls the Gym, TM, and Party from your TrainerDex
         this.trainerData = new Trainer(name);

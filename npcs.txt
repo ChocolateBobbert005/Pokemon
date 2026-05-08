@@ -1,1 +1,3 @@
-T:\HS\Student\Computer Science\Software Engineering\TeamSeniorSlackers\Oakint.png,TRAINER,Brock,T:\HS\Student\Computer Science\Software Engineering\TeamSeniorSlackers\boy_down.png,104, 91,hello world
+T:\HS\Student\Computer Science\Software Engineering\TeamSeniorSlackers\BrocksGym.png,TRAINER,Brock,T:\HS\Student\Computer Science\Software Engineering\TeamSeniorSlackers\boy_down.png,103,90,hello world
+T:\HS\Student\Computer Science\Software Engineering\TeamSeniorSlackers\Oakint.png,OAK,Professor Oak,C:\Users\Lemkcar\Downloads\OakSprite.png,100,80
+T:\HS\Student\Computer Science\Software Engineering\TeamSeniorSlackers\PalletTown.png,NURSE,Nurse Joy,T:\HS\Student\Computer Science\Software Engineering\TeamSeniorSlackers\boy_down.png,100,100

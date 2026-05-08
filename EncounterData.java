@@ -1,13 +1,9 @@
 public class EncounterData {
-    private String name;
-    private int chance; // The probability of this Pokemon appearing
+    public String pokemonName; // Changed to match your loop
+    public int chance;         // Must be public for direct access
 
-    // This is the "Constructor" that was missing!
-    public EncounterData(String name, int chance) {
-        this.name = name;
+    public EncounterData(String pokemonName, int chance) {
+        this.pokemonName = pokemonName;
         this.chance = chance;
     }
-
-    public String getName() { return name; }
-    public int getChance() { return chance; }
 }

@@ -167,7 +167,7 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
 
     private void loadPlayerSprites() {
         try {
-            // String path = "T:\\HS\\Student\\Computer Science\\Software Engineering\\TeamSeniorSlackers\\";
+            String path = "T:\\HS\\Student\\Computer Science\\Software Engineering\\TeamSeniorSlackers\\";
             // playerUp = scaleSquare(ImageIO.read(new File(path + "boy_up.png")), PLAYER_SIZE);
             // playerDown = scaleSquare(ImageIO.read(new File(path + "boy_down.png")), PLAYER_SIZE);
             // playerLeft = scaleSquare(ImageIO.read(new File(path + "boy_left.png")), PLAYER_SIZE);
@@ -181,18 +181,18 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
             // playerRight1 = scaleSquare(ImageIO.read(new File(path + "BoyWalkRight1.png")), PLAYER_SIZE);
             // playerRight2= scaleSquare(ImageIO.read(new File(path + "BoyWalkRight2.png")), PLAYER_SIZE);
             
-            playerUp = scaleSquare(ImageIO.read(new File("C:\\Users\\Lemkcar\\Downloads\\PlayerUp.png")), PLAYER_SIZE);
-            playerDown = scaleSquare(ImageIO.read(new File("C:\\Users\\Lemkcar\\Downloads\\PlayerDown.png")), PLAYER_SIZE);
-            playerLeft = scaleSquare(ImageIO.read(new File("C:\\Users\\Lemkcar\\Downloads\\PlayerLeft.png")), PLAYER_SIZE);
-            playerRight = scaleSquare(ImageIO.read(new File("C:\\Users\\Lemkcar\\Downloads\\PlayerRight.png")), PLAYER_SIZE);
-            playerDown1 = scaleSquare(ImageIO.read(new File("C:\\Users\\Lemkcar\\Downloads\\PlayerWalkDown1.png")), PLAYER_SIZE);
-            playerDown2 = scaleSquare(ImageIO.read(new File("C:\\Users\\Lemkcar\\Downloads\\PlayerWalkDown2.png")), PLAYER_SIZE-2);
-            playerUp1 = scaleSquare(ImageIO.read(new File("C:\\Users\\Lemkcar\\Downloads\\PlayerWalkUp1.png")), PLAYER_SIZE);
-            playerUp2 = scaleSquare(ImageIO.read(new File("C:\\Users\\Lemkcar\\Downloads\\PlayerWalkUp2.png")), PLAYER_SIZE);
-            playerLeft1 = scaleSquare(ImageIO.read(new File("C:\\Users\\Lemkcar\\Downloads\\PlayerWalkLeft1.png")), PLAYER_SIZE);
-            playerLeft2 = scaleSquare(ImageIO.read(new File("C:\\Users\\Lemkcar\\Downloads\\PlayerWalkLeft2.png")), PLAYER_SIZE);
-            playerRight1 = scaleSquare(ImageIO.read(new File("C:\\Users\\Lemkcar\\Downloads\\PlayerWalkRight1.png")), PLAYER_SIZE);
-            playerRight2= scaleSquare(ImageIO.read(new File("C:\\Users\\Lemkcar\\Downloads\\PlayerWalkRight2.png")), PLAYER_SIZE);
+            playerUp = scaleSquare(ImageIO.read(new File(path + "PlayerUp.png")), PLAYER_SIZE);
+            playerDown = scaleSquare(ImageIO.read(new File(path + "PlayerDown.png")), PLAYER_SIZE);
+            playerLeft = scaleSquare(ImageIO.read(new File(path + "PlayerLeft.png")), PLAYER_SIZE);
+            playerRight = scaleSquare(ImageIO.read(new File(path + "PlayerRight.png")), PLAYER_SIZE);
+            playerDown1 = scaleSquare(ImageIO.read(new File(path + "PlayerWalkDown1.png")), PLAYER_SIZE);
+            playerDown2 = scaleSquare(ImageIO.read(new File(path + "PlayerWalkDown2.png")), PLAYER_SIZE-2);
+            playerUp1 = scaleSquare(ImageIO.read(new File(path + "PlayerWalkUp1.png")), PLAYER_SIZE);
+            playerUp2 = scaleSquare(ImageIO.read(new File(path + "PlayerWalkUp2.png")), PLAYER_SIZE);
+            playerLeft1 = scaleSquare(ImageIO.read(new File(path + "PlayerWalkLeft1.png")), PLAYER_SIZE);
+            playerLeft2 = scaleSquare(ImageIO.read(new File(path + "PlayerWalkLeft2.png")), PLAYER_SIZE);
+            playerRight1 = scaleSquare(ImageIO.read(new File(path + "PlayerWalkRight1.png")), PLAYER_SIZE);
+            playerRight2= scaleSquare(ImageIO.read(new File(path + "PlayerWalkRight2.png")), PLAYER_SIZE);
 
         } catch (IOException e) {
             System.err.println("Sprite Load Failed: " + e.getMessage());

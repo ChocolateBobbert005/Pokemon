@@ -94,6 +94,9 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
     private int spriteNum = 1;
     private String nurseMessage = "Welcome! Would you like me to heal your Pokémon?";
     private boolean nurseInteractionFinished = false;
+    private String lastExteriorMap = ""; // Stores "viridian.png", "pewter.png", etc.
+    private String lastCExteriorMap = "";
+    private int returnX, returnY;        // Stores the exact spot to spawn outside
     // Font(Name, Style, Size)
     class MapData {
         
@@ -168,19 +171,6 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
     private void loadPlayerSprites() {
         try {
             String path = "T:\\HS\\Student\\Computer Science\\Software Engineering\\TeamSeniorSlackers\\";
-            // playerUp = scaleSquare(ImageIO.read(new File(path + "boy_up.png")), PLAYER_SIZE);
-            // playerDown = scaleSquare(ImageIO.read(new File(path + "boy_down.png")), PLAYER_SIZE);
-            // playerLeft = scaleSquare(ImageIO.read(new File(path + "boy_left.png")), PLAYER_SIZE);
-            // playerRight = scaleSquare(ImageIO.read(new File(path + "boy_right.png")), PLAYER_SIZE);
-            // playerDown1 = scaleSquare(ImageIO.read(new File(path + "BoyWalkDown1.png")), PLAYER_SIZE);
-            // playerDown2 = scaleSquare(ImageIO.read(new File(path + "BoyWalkDown2.png")), PLAYER_SIZE);
-            // playerUp1 = scaleSquare(ImageIO.read(new File(path + "BoyWalkUp1.png")), PLAYER_SIZE);
-            // playerUp2 = scaleSquare(ImageIO.read(new File(path + "BoyWalkUp2.png")), PLAYER_SIZE);
-            // playerLeft1 = scaleSquare(ImageIO.read(new File(path + "BoyWalkLeft1.png")), PLAYER_SIZE);
-            // playerLeft2 = scaleSquare(ImageIO.read(new File(path + "BoyWalkLeft2.png")), PLAYER_SIZE);
-            // playerRight1 = scaleSquare(ImageIO.read(new File(path + "BoyWalkRight1.png")), PLAYER_SIZE);
-            // playerRight2= scaleSquare(ImageIO.read(new File(path + "BoyWalkRight2.png")), PLAYER_SIZE);
-            
             playerUp = scaleSquare(ImageIO.read(new File(path + "PlayerUp.png")), PLAYER_SIZE);
             playerDown = scaleSquare(ImageIO.read(new File(path + "PlayerDown.png")), PLAYER_SIZE);
             playerLeft = scaleSquare(ImageIO.read(new File(path + "PlayerLeft.png")), PLAYER_SIZE);
@@ -289,56 +279,87 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
         refreshNPCs(worldPath);
         determineRouteFromMap(worldPath);
     
-    System.out.println("MAP LOADED: " + worldPath + " | ROUTE UPDATED TO: " + currentRouteName);
+        System.out.println("MAP LOADED: " + worldPath + " | ROUTE UPDATED TO: " + currentRouteName);
         
     }
 
-//   public void checkGrassEncounters() {
-//     // 1. Calculate player's center point for accurate tile detection
-//     int cx = playerX + PLAYER_SIZE / 2; 
-//     int cy = playerY + PLAYER_SIZE / 2;
-        
-//     }
+    private void checkPokecenter(){
+        if (!(up || down || left || right)) return;
+        int cx = playerX + PLAYER_SIZE / 2;
+        int cy = playerY + PLAYER_SIZE - 5;
+        // 2. Boundary Safety: Ensure we aren't checking outside the image pixels
+        if (cx >= 0 && cy >= 0 && cx < WORLD_WIDTH && cy < WORLD_HEIGHT) {
+            
+            // 3. Get the hex color from the collision map (ignoring Alpha)
+            int currentTileColor = collisionMap.getRGB(cx, cy) & 0xFFFFFF;
+            
+            // This matches the dark green color we identified earlier
+            int DOOR_COLOR = 0x62a4de; 
+            int EXIT_COLOR = 0x8db48a;
+            if(currentMapPath != "T:\\HS\\Student\\Computer Science\\Software Engineering\\TeamSeniorSlackers\\PokeCenter.png")
+                {
+                    if (currentTileColor == DOOR_COLOR) {
+                        // 1. Save the CURRENT city map name before we switch it
+                        lastExteriorMap = currentMapPath; 
+                        lastCExteriorMap = currentCollisionPath;
 
+                        // 2. Save the return coordinates (place them slightly below the door)
+                        returnX = playerX;
+                        returnY = playerY + 48; 
+
+                        // 3. Now load the generic interior
+                        loadMap("T:\\HS\\Student\\Computer Science\\Software Engineering\\TeamSeniorSlackers\\PokeCenter.png", "T:\\HS\\Student\\Computer Science\\Software Engineering\\TeamSeniorSlackers\\PokeCenterC.png");
+                        centerSpawnSafe();
+                        
+                    }
+                }
+            else if (currentTileColor == EXIT_COLOR) {
+                loadMap(lastExteriorMap, lastCExteriorMap);
+                playerX = returnX;
+                playerY = returnY;
+            }
+        }
+    }
+    
 
     private void checkGrassEncounter() {
         if (!(up || down || left || right)) return;
         int cx = playerX + PLAYER_SIZE / 2;
-        int cy = playerX + PLAYER_SIZE - 5;
-    // 2. Boundary Safety: Ensure we aren't checking outside the image pixels
-    if (cx >= 0 && cy >= 0 && cx < WORLD_WIDTH && cy < WORLD_HEIGHT) {
+        int cy = playerY + PLAYER_SIZE - 5;
+        // 2. Boundary Safety: Ensure we aren't checking outside the image pixels
+        if (cx >= 0 && cy >= 0 && cx < WORLD_WIDTH && cy < WORLD_HEIGHT ) {
         
-        // 3. Get the hex color from the collision map (ignoring Alpha)
-        int currentTileColor = collisionMap.getRGB(cx, cy) & 0xFFFFFF;
-        
-        // This matches the dark green color we identified earlier
-        int GRASS_COLOR = 0x399431; 
-
-        // 4. Trigger logic: Only roll if we are ON the grass AND MOVING
-        if (currentTileColor == GRASS_COLOR && (up || down || left || right)) {
-            System.out.println("LOG: Player is currently IN grass and moving...");
+            // 3. Get the hex color from the collision map (ignoring Alpha)
+            int currentTileColor = collisionMap.getRGB(cx, cy) & 0xFFFFFF;
             
-            /* * ENCOUNTER RATE: 0.004 (0.4%)
-             * At 60 FPS, this rolls 60 times a second. 
-             * This math results in roughly one encounter every 4-5 seconds of walking.
-             */
-            if (Math.random() < 0.02) { 
+            // This matches the dark green color we identified earlier
+            int GRASS_COLOR = 0x399431; 
+
+            // 4. Trigger logic: Only roll if we are ON the grass AND MOVING
+            if (currentTileColor == GRASS_COLOR && (up || down || left || right) && (playerParty.size() > 0)) {
+                System.out.println("LOG: Player is currently IN grass and moving...");
                 
-                // 5. Route Safety: Ensure the map actually has a valid encounter table
-                if (currentRouteName != null && !currentRouteName.equalsIgnoreCase("none")) {
+                /* * ENCOUNTER RATE: 0.004 (0.4%)
+                * At 60 FPS, this rolls 60 times a second. 
+                * This math results in roughly one encounter every 4-5 seconds of walking.
+                */
+                if (Math.random() < 0.02) { 
                     
-                    // 6. Roll the dice against your encounters.txt data
-                    String wildMon = rollWildEncounter(currentRouteName);
-                    
-                    if (wildMon != null) {
-                        // 7. Success! Pull the player into the battle screen
-                        triggerWildBattle(wildMon);
+                    // 5. Route Safety: Ensure the map actually has a valid encounter table
+                    if (currentRouteName != null && !currentRouteName.equalsIgnoreCase("none")) {
+                        
+                        // 6. Roll the dice against your encounters.txt data
+                        String wildMon = rollWildEncounter(currentRouteName);
+                        
+                        if (wildMon != null) {
+                            // 7. Success! Pull the player into the battle screen
+                            triggerWildBattle(wildMon);
+                        }
                     }
                 }
             }
         }
     }
-}
 
     private void triggerEncounter() {
         up = down = left = right = false; 
@@ -377,22 +398,22 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
     
     return (int) Math.max(1, damage); // Always do at least 1 damage
     }
-    private void enemyAttack() {
-    // 1. Pick a random move from the enemy's known moves
-    java.util.List<String> moves = currentEnemy.getKnownMoves();
-    String moveName = moves.get((int)(Math.random() * moves.size()));
-    
-    // 2. Look up the move in the database
-    Move selectedMove = Move.moveDatabase.get(moveName);
-    
-    // 3. Calculate and apply damage
-    int damage = calculateDamage(currentEnemy, myPokemon, selectedMove);
-    myPokemon.takeDamage(damage);
-    
-    // 4. Update the UI
-    battleMessage = "Enemy " + currentEnemy.getName() + " used " + moveName + "!";
-    currentBattleMenu = BattleMenu.ENEMY_MESSAGE;
-}
+        private void enemyAttack() {
+        // 1. Pick a random move from the enemy's known moves
+        java.util.List<String> moves = currentEnemy.getKnownMoves();
+        String moveName = moves.get((int)(Math.random() * moves.size()));
+        
+        // 2. Look up the move in the database
+        Move selectedMove = Move.moveDatabase.get(moveName);
+        
+        // 3. Calculate and apply damage
+        int damage = calculateDamage(currentEnemy, myPokemon, selectedMove);
+        myPokemon.takeDamage(damage);
+        
+        // 4. Update the UI
+        battleMessage = "Enemy " + currentEnemy.getName() + " used " + moveName + "!";
+        currentBattleMenu = BattleMenu.ENEMY_MESSAGE;
+    }
 
     void findSpawnPoint(Color spawnColor) {
         if (collisionMap == null) { centerSpawnSafe(); return; }
@@ -526,7 +547,7 @@ public void update() {
         if (left)  { nextX -= SPEED; facing = Direction.LEFT; }
         if (right) { nextX += SPEED; facing = Direction.RIGHT; }
         checkGrassEncounter();
-
+        
         if (!isColliding(nextX, playerY)) playerX = nextX;
         if (!isColliding(playerX, nextY)) playerY = nextY;
 
@@ -561,6 +582,7 @@ public void update() {
 
         checkMapTransition();
         checkGrassEncounter();
+        checkPokecenter();
         cameraX = playerX - SCREEN_WIDTH / 2 + PLAYER_SIZE / 2;
         cameraY = playerY - SCREEN_HEIGHT / 2 + PLAYER_SIZE / 2;
         cameraX = Math.max(0, Math.min(cameraX, WORLD_WIDTH - SCREEN_WIDTH));
@@ -1075,7 +1097,6 @@ void checkMapTransition() {
     @Override public void actionPerformed(ActionEvent e) { update(); repaint(); }
     
     @Override public void keyPressed(KeyEvent e) {
-        System.out.println("Start of Keypressed");
         if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
             if (currentState == GameState.OVERWORLD) {
                 currentState = GameState.PAUSE;
@@ -1543,6 +1564,17 @@ public void loadEncounters() {
         e.printStackTrace();
     }
 }
+public boolean PartyFainted(ArrayList<Pokemon> party)
+{
+    for(int i = 0; i < party.size(); i++)
+    {
+        if (party.get(i).getCurrentHp() > 0)
+        {
+            return false;
+        }
+    }
+    return true;
+}
 
 public void triggerWildBattle(String wildMonName) {
     // 1. Freeze player movement so they don't walk away during the transition
@@ -1550,8 +1582,10 @@ public void triggerWildBattle(String wildMonName) {
 
     // Optional: Heal the player's lead Pokémon if it fainted previously 
     // (You had this in your trainer battle logic, so I kept it here to prevent instant game-overs!)
-    if (myPokemon.isFainted()) {
-        myPokemon.heal(myPokemon.getMaxHp());
+    if (PartyFainted(playerParty)) {
+        loadMap("T:\\HS\\Student\\Computer Science\\Software Engineering\\TeamSeniorSlackers\\PokeCenter.png", "T:\\HS\\Student\\Computer Science\\Software Engineering\\TeamSeniorSlackers\\PokeCenterC.png");
+        centerSpawnSafe();
+        currentState = GameState.OVERWORLD;
     }
     
     // 2. Generate the Wild Enemy 

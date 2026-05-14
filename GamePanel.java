@@ -30,7 +30,7 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
     private Direction facing = Direction.DOWN;
 
     // ===== GAME STATES =====
-    private enum GameState { OVERWORLD, BATTLE, OAK_DIALOGUE, STARTER_SELECT, NURSE_MENU, PAUSE }
+    private enum GameState { OVERWORLD, BATTLE, OAK_DIALOGUE, STARTER_SELECT, NURSE_MENU, PAUSE, POKEMON_MENU }
     private GameState currentState = GameState.OVERWORLD;
 
     // ===== PLAYER =====
@@ -66,6 +66,8 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
     // ===== BATTLE VARIABLES =====
     private final String SPRITE_PATH = "T:\\HS\\Student\\Computer Science\\Software Engineering\\Pokemon Sprites\\";
     
+    public boolean inPokemonMenu = false;
+    public int pokemonMenuIndex = 0;
     private ArrayList<Pokemon> playerParty = new ArrayList<Pokemon>();
     private Pokemon myPokemon; 
     
@@ -121,7 +123,7 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
     
 
         loadPlayerSprites();
-        loadPortalData("C:\\Users\\Lemkcar\\Documents\\GitCode\\Pokemon\\world.txt");
+        loadPortalData("C:\\Users\\WainBra\\Documents\\GitCode\\Pokemon\\world.txt");
         
         loadMap("T:\\HS\\Student\\Computer Science\\Software Engineering\\TeamSeniorSlackers\\Lph.png",
                 "T:\\HS\\Student\\Computer Science\\Software Engineering\\TeamSeniorSlackers\\LphC2.png");
@@ -215,7 +217,7 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
         npcList.clear(); // Wipe the old map's NPCs
 
         // 1. Define the file location
-        File file = new File("C:\\Users\\Lemkcar\\Documents\\GitCode\\Pokemon\\npcs.txt");
+        File file = new File("C:\\Users\\Wainbra\\Documents\\GitCode\\Pokemon\\npcs.txt");
 
         // 2. Check if the file actually exists on your hard drive
         if (!file.exists()) {
@@ -649,6 +651,52 @@ public void update() {
     return false; // No walls or NPCs hit!
 }
 
+private void drawPokemonMenu(Graphics2D g2) {
+    // 1. Draw a dark background
+    System.out.println("Paint");
+    g2.setColor(Color.MAGENTA); 
+    g2.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+
+    // 2. Draw Title
+    g2.setColor(Color.WHITE);
+    g2.setFont(new Font("Monospaced", Font.BOLD, 28));
+    g2.drawString("SELECT YOUR LEAD POKEMON", 50, 50);
+    g2.drawLine(50, 60, SCREEN_WIDTH - 50, 60);
+
+    // 3. Loop through Party
+    for (int i = 0; i < playerParty.size(); i++) {
+        Pokemon p = playerParty.get(i);
+        int x = 100;
+        int y = 120 + (i * 80);
+
+        // Highlight if selected
+        if (i == pokemonMenuIndex) {
+            g2.setColor(new Color(255, 255, 255, 50));
+            g2.fillRect(80, y - 40, SCREEN_WIDTH - 160, 60);
+            g2.setColor(Color.YELLOW);
+            g2.drawString("> ", x - 40, y);
+        } else {
+            g2.setColor(Color.WHITE);
+        }
+
+        // Draw Name and HP (Fixing the getHp vs getCurrentHp issue)
+        g2.drawString(p.getName(), x, y);
+        g2.setFont(new Font("Monospaced", Font.PLAIN, 18));
+        g2.drawString("LV" + p.getLevel() + " HP: " + p.getCurrentHp() + "/" + p.getMaxHp(), x + 200, y);
+        
+        if (p == myPokemon) {
+            g2.setColor(Color.CYAN);
+            g2.drawString("[ CURRENT LEAD ]", x + 450, y);
+        }
+        g2.setFont(new Font("Monospaced", Font.BOLD, 28)); // Reset font
+    }
+
+    // 4. Footer
+    g2.setFont(new Font("Monospaced", Font.PLAIN, 14));
+    g2.setColor(Color.WHITE);
+    g2.drawString("Press ENTER to Set Lead | ESC/BACKSPACE to Return", 50, SCREEN_HEIGHT - 50);
+}
+
 private void drawPauseMenu(Graphics2D g2) {
     // 1. Draw a dark, semi-transparent tint over the whole game
     g2.setColor(new Color(0, 0, 0, 150)); 
@@ -698,7 +746,7 @@ protected void paintComponent(Graphics g) {
     Graphics2D g2 = (Graphics2D) g;
     
     
-    if (currentState == GameState.OVERWORLD || currentState == GameState.OAK_DIALOGUE || currentState == GameState.STARTER_SELECT || currentState == GameState.NURSE_MENU|| currentState == GameState.PAUSE) {
+    if (currentState == GameState.OVERWORLD || currentState == GameState.OAK_DIALOGUE || currentState == GameState.STARTER_SELECT || currentState == GameState.NURSE_MENU|| currentState == GameState.PAUSE || currentState == GameState.POKEMON_MENU) {
         if (worldMap == null) return;
         int screenW = getWidth(); int screenH = getHeight();
         int offsetX = 0; int offsetY = 0;
@@ -743,11 +791,22 @@ protected void paintComponent(Graphics g) {
                 }
             }
         }
+        if (currentState == GameState.PAUSE) {
+        drawPauseMenu(g2);
+        }
+        System.out.println("cs:"+currentState + "gs:"+ GameState.POKEMON_MENU);
+        if (currentState == GameState.POKEMON_MENU) {
+        drawPokemonMenu(g2); // Now it has its own dedicated stage
+        }
+
         
         
     if (!playerDrawn) {
             drawPlayer(g2, offsetX, offsetY);
         }
+        
+
+
         
 
         // --- DRAW PLAYER (Final pass) ---
@@ -1074,7 +1133,8 @@ void checkMapTransition() {
 }
     @Override public void actionPerformed(ActionEvent e) { update(); repaint(); }
     
-    @Override public void keyPressed(KeyEvent e) {
+    @Override public void keyPressed(KeyEvent e) 
+    {
         System.out.println("Start of Keypressed");
         if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
             if (currentState == GameState.OVERWORLD) {
@@ -1106,9 +1166,14 @@ void checkMapTransition() {
                     currentState = GameState.OVERWORLD; // Resume
                 } 
                 else if (pauseCursor == 1) { 
-                    // Pokemon Menu (Placeholder until you build the screen)
-                    System.out.println("Opening Pokemon Menu... (Coming soon!)");
-                } 
+                   currentState = GameState.POKEMON_MENU; // This is the trigger
+                    pokemonMenuIndex = 0; 
+                    System.out.println("State changed to POKEMON_MENU"); // Add this debug line!
+                    //drawPokemonMenu(g2);
+                    
+                    
+                }
+                
                 else if (pauseCursor == 2) { 
                     // Bag Menu (Placeholder until you build the screen)
                     System.out.println("Opening Bag... (Coming soon!)");
@@ -1123,8 +1188,36 @@ void checkMapTransition() {
                 else if (pauseCursor == 5) { 
                     System.exit(0); // Quits the entire game window
                 }
+                
             }
         }
+        else if (currentState == GameState.POKEMON_MENU) {
+        if (e.getKeyCode() == KeyEvent.VK_W || e.getKeyCode() == KeyEvent.VK_UP) {
+            pokemonMenuIndex--;
+            if (pokemonMenuIndex < 0) pokemonMenuIndex = playerParty.size() - 1;
+        }
+        if (e.getKeyCode() == KeyEvent.VK_S || e.getKeyCode() == KeyEvent.VK_DOWN) {
+            pokemonMenuIndex++;
+            if (pokemonMenuIndex >= playerParty.size()) pokemonMenuIndex = 0;
+        }
+        if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+            // Set the new lead
+            myPokemon = playerParty.get(pokemonMenuIndex);
+            System.out.println("New Lead: " + myPokemon.getName());
+            
+            // Go all the way back to the game
+            currentState = GameState.OVERWORLD; 
+        }
+        if (e.getKeyCode() == KeyEvent.VK_ESCAPE || e.getKeyCode() == KeyEvent.VK_BACK_SPACE) {
+            // Go back to the Pause Menu
+            currentState = GameState.PAUSE; 
+        }
+        
+        
+       
+    repaint();
+    return; // Important: Stop other movement code from running!
+}
 
     if (currentState == GameState.NURSE_MENU) {
         if (!nurseInteractionFinished) {
@@ -1408,6 +1501,7 @@ void checkMapTransition() {
                     currentBattleMenu = BattleMenu.MAIN; menuCursor = 0;
                 }
             }
+            repaint();
         
        }
 
@@ -1478,7 +1572,7 @@ public void determineRouteFromMap(String mapFilePath) {
 
     try {
         // 4. Combine your safe folder path with your new custom file name!
-        String basePath = "C:\\Users\\Lemkcar\\Documents\\GitCode\\Pokemon\\";
+        String basePath = "C:\\Users\\Wainbra\\Documents\\GitCode\\Pokemon\\";
         String filePath = basePath + saveName;
         
         PrintWriter writer = new PrintWriter(new FileWriter(filePath));
@@ -1498,7 +1592,7 @@ public void determineRouteFromMap(String mapFilePath) {
     }
 }
 public void loadEncounters() {
-    String filePath = "C:\\Users\\Lemkcar\\Documents\\GitCode\\Pokemon\\encounters.txt";
+    String filePath = "C:\\Users\\Wainbra\\Documents\\GitCode\\Pokemon\\encounters.txt";
     routeEncounters.clear(); 
     
     try {
@@ -1626,7 +1720,7 @@ public String rollWildEncounter(String currentRouteName) {
 
     try {
         // 2. Combine the path to find your specific file
-        String basePath = "C:\\Users\\Lemkcar\\Documents\\GitCode\\Pokemon\\";
+        String basePath = "C:\\Users\\Wainbra\\Documents\\GitCode\\Pokemon\\";
         String filePath = basePath + saveName;
         File saveFile = new File(filePath);
         

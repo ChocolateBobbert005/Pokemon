@@ -96,9 +96,9 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
     private int spriteNum = 1;
     private String nurseMessage = "Welcome! Would you like me to heal your Pokémon?";
     private boolean nurseInteractionFinished = false;
-    private String lastExteriorMap = ""; // Stores "viridian.png", "pewter.png", etc.
-    private String lastCExteriorMap = "";
-    private int returnX, returnY;        // Stores the exact spot to spawn outside
+    private String lastExteriorMap = "T:\\HS\\Student\\Computer Science\\Software Engineering\\TeamSeniorSlackers\\Viridian City.png"; // Stores "viridian.png", "pewter.png", etc.
+    private String lastCExteriorMap = "T:\\HS\\Student\\Computer Science\\Software Engineering\\TeamSeniorSlackers\\ViridianCityC.png";
+    private int returnX = 824, returnY = 838;        // Stores the exact spot to spawn outside
     // Font(Name, Style, Size)
     class MapData {
         
@@ -126,7 +126,7 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
     
 
         loadPlayerSprites();
-        loadPortalData("C:\\Users\\WainBra\\Documents\\GitCode\\Pokemon\\world.txt");
+        loadPortalData("C:\\Users\\Lemkcar\\Documents\\GitCode\\Pokemon\\world.txt");
         
         loadMap("T:\\HS\\Student\\Computer Science\\Software Engineering\\TeamSeniorSlackers\\Lph.png",
                 "T:\\HS\\Student\\Computer Science\\Software Engineering\\TeamSeniorSlackers\\LphC2.png");
@@ -207,7 +207,7 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
         npcList.clear(); // Wipe the old map's NPCs
 
         // 1. Define the file location
-        File file = new File("C:\\Users\\Wainbra\\Documents\\GitCode\\Pokemon\\npcs.txt");
+        File file = new File("C:\\Users\\Lemkcar\\Documents\\GitCode\\Pokemon\\npcs.txt");
 
         // 2. Check if the file actually exists on your hard drive
         if (!file.exists()) {
@@ -388,8 +388,20 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
     }
     
     private void endBattle() {
-        currentState = GameState.OVERWORLD; 
-        currentEnemy = null;
+        System.out.println("PENIS");
+        if(PartyFainted(playerParty))
+        {
+            loadMap("T:\\HS\\Student\\Computer Science\\Software Engineering\\TeamSeniorSlackers\\PokeCenter.png", "T:\\HS\\Student\\Computer Science\\Software Engineering\\TeamSeniorSlackers\\PokeCenterC.png");
+            centerSpawnSafe(); 
+            currentState = GameState.OVERWORLD;
+            
+            currentEnemy = null;
+        }
+        else
+        {
+            currentState = GameState.OVERWORLD; 
+            currentEnemy = null;
+        }
     }
     
     private int calculateDamage(Pokemon attacker, Pokemon defender, Move move) {
@@ -1482,14 +1494,7 @@ void checkMapTransition() {
                     if (myPokemon.isFainted()) {
                         battleMessage = myPokemon.getName() + " fainted!";
                         currentBattleMenu = BattleMenu.END_MESSAGE;
-                    } else { 
-                        currentBattleMenu = BattleMenu.MAIN; menuCursor = 0; 
-                    }
-                }
-                else if (currentBattleMenu == BattleMenu.ENEMY_MESSAGE) {
-                    if (myPokemon.isFainted()) {
-                        battleMessage = myPokemon.getName() + " fainted!";
-                        currentBattleMenu = BattleMenu.END_MESSAGE;
+                        
                     } else { 
                         currentBattleMenu = BattleMenu.MAIN; menuCursor = 0; 
                     }
@@ -1592,7 +1597,7 @@ public void determineRouteFromMap(String mapFilePath) {
 
     try {
         // 4. Combine your safe folder path with your new custom file name!
-        String basePath = "C:\\Users\\Wainbra\\Documents\\GitCode\\Pokemon\\";
+        String basePath = "C:\\Users\\Lemkcar\\Documents\\GitCode\\Pokemon\\";
         String filePath = basePath + saveName;
         
         PrintWriter writer = new PrintWriter(new FileWriter(filePath));
@@ -1612,7 +1617,7 @@ public void determineRouteFromMap(String mapFilePath) {
     }
 }
 public void loadEncounters() {
-    String filePath = "C:\\Users\\Wainbra\\Documents\\GitCode\\Pokemon\\encounters.txt";
+    String filePath = "C:\\Users\\Lemkcar\\Documents\\GitCode\\Pokemon\\encounters.txt";
     routeEncounters.clear(); 
     
     try {
@@ -1753,7 +1758,7 @@ public String rollWildEncounter(String currentRouteName) {
 
     try {
         // 2. Combine the path to find your specific file
-        String basePath = "C:\\Users\\Wainbra\\Documents\\GitCode\\Pokemon\\";
+        String basePath = "C:\\Users\\Lemkcar\\Documents\\GitCode\\Pokemon\\";
         String filePath = basePath + saveName;
         File saveFile = new File(filePath);
         

@@ -1,0 +1,84 @@
+Bulbasaur, Ivysaur, Level, 16
+Ivysaur, Venusaur, Level, 32
+Charmander, Charmeleon, Level, 16
+Charmeleon, Charizard, Level, 36
+Squirtle, Wartortle, Level, 16
+Wartortle, Blastoise, Level, 36
+Caterpie, Metapod, Level, 7
+Metapod, Butterfree, Level, 10
+Weedle, Kakuna, Level, 7
+Kakuna, Beedrill, Level, 10
+Pidgey, Pidgeotto, Level, 18
+Pidgeotto, Pidgeot, Level, 36
+Rattata, Raticate, Level, 20
+Spearow, Fearow, Level, 20
+Ekans, Arbok, Level, 22
+Pikachu, Raichu, Item, Thunder Stone
+Sandshrew, Sandslash, Level, 22
+Nidoran-F, Nidorina, Level, 16
+Nidorina, Nidoqueen, Item, Moon Stone
+Nidoran-M, Nidorino, Level, 16
+Nidorino, Nidoking, Item, Moon Stone
+Clefairy, Clefable, Item, Moon Stone
+Vulpix, Ninetales, Item, Fire Stone
+Jigglypuff, Wigglytuff, Item, Moon Stone
+Zubat, Golbat, Level, 22
+Oddish, Gloom, Level, 21
+Gloom, Vileplume, Item, Leaf Stone
+Gloom, Bellossom, Item, Sun Stone
+Paras, Parasect, Level, 24
+Venonat, Venomoth, Level, 31
+Diglett, Dugtrio, Level, 26
+Meowth, Persian, Level, 28
+Psyduck, Golduck, Level, 33
+Mankey, Primeape, Level, 28
+Growlithe, Arcanine, Item, Fire Stone
+Poliwag, Poliwhirl, Level, 25
+Poliwhirl, Poliwrath, Item, Water Stone
+Poliwhirl, Politoed, Trade, King's Rock
+Abra, Kadabra, Level, 16
+Kadabra, Alakazam, Trade, None
+Machop, Machoke, Level, 28
+Machoke, Machamp, Trade, None
+Bellsprout, Weepinbell, Level, 21
+Weepinbell, Victreebel, Item, Leaf Stone
+Tentacool, Tentacruel, Level, 30
+Geodude, Graveler, Level, 25
+Graveler, Golem, Trade, None
+Ponyta, Rapidash, Level, 40
+Slowpoke, Slowbro, Level, 37
+Slowpoke, Slowking, Trade, King's Rock
+Magnemite, Magneton, Level, 30
+Doduo, Dodrio, Level, 31
+Seel, Dewgong, Level, 34
+Grimer, Muk, Level, 38
+Shellder, Cloyster, Item, Water Stone
+Gastly, Haunter, Level, 25
+Haunter, Gengar, Trade, None
+Onix, Steelix, Trade, Metal Coat
+Drowzee, Hypno, Level, 26
+Krabby, Kingler, Level, 28
+Voltorb, Electrode, Level, 30
+Exeggcute, Exeggutor, Item, Leaf Stone
+Cubone, Marowak, Level, 28
+Hitmonlee, Hitmontop, Level, 20
+Hitmonchan, Hitmontop, Level, 20
+Lickitung, None, None, None
+Koffing, Weezing, Level, 35
+Rhyhorn, Rhydon, Level, 42
+Chansey, Blissey, Friendship, Max
+Horsea, Seadra, Level, 32
+Seadra, Kingdra, Trade, Dragon Scale
+Staryu, Starmie, Item, Water Stone
+Scyther, Scizor, Trade, Metal Coat
+Magikarp, Gyarados, Level, 20
+Eevee, Vaporeon, Item, Water Stone
+Eevee, Jolteon, Item, Thunder Stone
+Eevee, Flareon, Item, Fire Stone
+Eevee, Espeon, Friendship, Day
+Eevee, Umbreon, Friendship, Night
+Porygon, Porygon2, Trade, Up-Grade
+Omanyte, Omastar, Level, 40
+Kabuto, Kabutops, Level, 40
+Dratini, Dragonair, Level, 30
+Dragonair, Dragonite, Level, 55

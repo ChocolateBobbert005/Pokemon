@@ -97,7 +97,7 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
         addKeyListener(this);
 
         loadPlayerSprites();
-        loadPortalData("C:\\Users\\WainBra\\Documents\\GitCode\\Pokemon\\world.txt");
+        loadPortalData("C:\\Users\\HernFel\\Documents\\GitCode\\Pokemon\\world.txt");
         
         loadMap("T:\\HS\\Student\\Computer Science\\Software Engineering\\TeamSeniorSlackers\\Lph.png",
                 "T:\\HS\\Student\\Computer Science\\Software Engineering\\TeamSeniorSlackers\\LphC2.png");

@@ -30,7 +30,7 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
     private Direction facing = Direction.DOWN;
 
     // ===== GAME STATES =====
-    private enum GameState { OVERWORLD, BATTLE, OAK_DIALOGUE, STARTER_SELECT, NURSE_MENU, PAUSE, POKEMON_MENU }
+    private enum GameState { OVERWORLD, BATTLE, OAK_DIALOGUE, STARTER_SELECT, NURSE_MENU, PAUSE, POKEMON_MENU, MART_MENU }
     private GameState currentState = GameState.OVERWORLD;
 
     // ===== PLAYER =====
@@ -87,7 +87,29 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
     private HashMap<String, ArrayList<EncounterData>> routeEncounters = new HashMap<>();
     public String currentRouteName = "Pallet_Town";
     
-    
+    // --- POKEMART SYSTEM ---
+    public enum MartState { MAIN, BUY, SELL, LEAVE }
+    private MartState currentMartState = MartState.MAIN;
+
+    private int playerCoins = 1000; // Starting money
+    private java.util.List<Item> playerInventory = new java.util.ArrayList<>();
+    private java.util.List<Item> martStock = new java.util.ArrayList<>();
+    private int martCursor = 0; // Tracks scrolling through items/options
+    private String martMessage = "Welcome to the PokéMart! How can I help you?";
+    Item dummyPotion = new Item("Potion", 300,0);
+
+    // Call this inside your GamePanel constructor or setup method:
+    private void setupMartStock() {
+        martStock.clear();
+        playerInventory.clear();
+
+        martStock.add(new Item("Pokéball", 200, 99));
+        martStock.add(new Item("Potion", 300, 99));
+        martStock.add(new Item("Antidote", 100, 99));
+        
+        // Seed sample player inventory item for testing
+        playerInventory.add(new Item("Potion", 300, 1));
+    }
     
 
     // In your Player class or GamePanel
@@ -136,6 +158,7 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
         playSound("04 - Pallet Town.wav", true);
         
         timer.start();
+        setupMartStock();
     }
 
     public void playSound(String fileName, boolean loop) {
@@ -322,7 +345,43 @@ public class GamePanel extends JPanel implements KeyListener, ActionListener {
             }
         }
     }
-    
+    private void checkPokeMart(){
+        if (!(up || down || left || right)) return;
+        int cx = playerX + PLAYER_SIZE / 2;
+        int cy = playerY + PLAYER_SIZE - 5;
+        // 2. Boundary Safety: Ensure we aren't checking outside the image pixels
+        if (cx >= 0 && cy >= 0 && cx < WORLD_WIDTH && cy < WORLD_HEIGHT) {
+            
+            // 3. Get the hex color from the collision map (ignoring Alpha)
+            int currentTileColor = collisionMap.getRGB(cx, cy) & 0xFFFFFF;
+            
+            // This matches the dark green color we identified earlier
+            int DOOR_COLOR = 0x9cd5ff; 
+            int EXIT_COLOR = 0xe4f4a3;
+            if(currentMapPath != "T:\\HS\\Student\\Computer Science\\Software Engineering\\TeamSeniorSlackers\\Pokemart.png")
+                {
+                    if (currentTileColor == DOOR_COLOR) {
+                        // 1. Save the CURRENT city map name before we switch it
+                        lastExteriorMap = currentMapPath; 
+                        lastCExteriorMap = currentCollisionPath;
+
+                        // 2. Save the return coordinates (place them slightly below the door)
+                        returnX = playerX;
+                        returnY = playerY + 48; 
+
+                        // 3. Now load the generic interior
+                        loadMap("T:\\HS\\Student\\Computer Science\\Software Engineering\\TeamSeniorSlackers\\Pokemart.png", "T:\\HS\\Student\\Computer Science\\Software Engineering\\TeamSeniorSlackers\\PokemartrC.png");
+                        centerSpawnSafe();
+                        
+                    }
+                }
+            else if (currentTileColor == EXIT_COLOR) {
+                loadMap(lastExteriorMap, lastCExteriorMap);
+                playerX = returnX;
+                playerY = returnY;
+            }
+        }
+    }
 
     private void checkGrassEncounter() {
         if (!(up || down || left || right)) return;
@@ -597,6 +656,7 @@ public void update() {
         checkMapTransition();
         checkGrassEncounter();
         checkPokecenter();
+        checkPokeMart();
         cameraX = playerX - SCREEN_WIDTH / 2 + PLAYER_SIZE / 2;
         cameraY = playerY - SCREEN_HEIGHT / 2 + PLAYER_SIZE / 2;
         cameraX = Math.max(0, Math.min(cameraX, WORLD_WIDTH - SCREEN_WIDTH));
@@ -780,7 +840,7 @@ protected void paintComponent(Graphics g) {
     Graphics2D g2 = (Graphics2D) g;
     
     
-    if (currentState == GameState.OVERWORLD || currentState == GameState.OAK_DIALOGUE || currentState == GameState.STARTER_SELECT || currentState == GameState.NURSE_MENU|| currentState == GameState.PAUSE || currentState == GameState.POKEMON_MENU) {
+    if (currentState == GameState.OVERWORLD || currentState == GameState.OAK_DIALOGUE || currentState == GameState.STARTER_SELECT || currentState == GameState.NURSE_MENU|| currentState == GameState.PAUSE || currentState == GameState.POKEMON_MENU|| currentState == GameState.MART_MENU) {
         if (worldMap == null) return;
         int screenW = getWidth(); int screenH = getHeight();
         int offsetX = 0; int offsetY = 0;
@@ -828,11 +888,13 @@ protected void paintComponent(Graphics g) {
         if (currentState == GameState.PAUSE) {
         drawPauseMenu(g2);
         }
-        System.out.println("cs:"+currentState + "gs:"+ GameState.POKEMON_MENU);
-        if (currentState == GameState.POKEMON_MENU) {
+        //System.out.println("cs:"+currentState + "gs:"+ GameState.POKEMON_MENU);
+        else if (currentState == GameState.POKEMON_MENU) {
         drawPokemonMenu(g2); // Now it has its own dedicated stage
         }
-
+        else if (currentState == GameState.MART_MENU) {
+        drawMartUI(g2); // <--- DRAW MART INTERFACE
+        }
         
         
     if (!playerDrawn) {
@@ -1179,10 +1241,78 @@ void checkMapTransition() {
                 currentState = GameState.OVERWORLD; // Unpause
             }
         }
+        if (currentState == GameState.MART_MENU) {
+    if (e.getKeyCode() == KeyEvent.VK_ESCAPE || e.getKeyCode() == KeyEvent.VK_BACK_SPACE) {
+        // Fall back to main counter choice context
+        currentMartState = MartState.MAIN;
+        martCursor = 0;
+    }
 
-
-
-// --- PAUSE MENU CONTROLS ---
+    if (currentMartState == MartState.MAIN) {
+        if (e.getKeyCode() == KeyEvent.VK_A || e.getKeyCode() == KeyEvent.VK_LEFT) { martCursor = Math.max(0, martCursor - 1); }
+        if (e.getKeyCode() == KeyEvent.VK_D || e.getKeyCode() == KeyEvent.VK_RIGHT) { martCursor = Math.min(2, martCursor + 1); }
+        
+        if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+            if (martCursor == 0) {
+                currentMartState = MartState.BUY;
+                martCursor = 0;
+            } else if (martCursor == 1) {
+                currentMartState = MartState.SELL;
+                martCursor = 0;
+            } else {
+                martMessage = "Thank you! Have a wonderful day!";
+                currentMartState = MartState.LEAVE;
+            }
+        }
+    } 
+        else if (currentMartState == MartState.BUY) {
+            if (e.getKeyCode() == KeyEvent.VK_W || e.getKeyCode() == KeyEvent.VK_UP) { martCursor = Math.max(0, martCursor - 1); }
+            if (e.getKeyCode() == KeyEvent.VK_S || e.getKeyCode() == KeyEvent.VK_DOWN) { martCursor = Math.min(martStock.size() - 1, martCursor + 1); }
+            
+            if (e.getKeyCode() == KeyEvent.VK_ENTER && !martStock.isEmpty()) {
+                Item selected = martStock.get(martCursor);
+                if (playerCoins >= selected.getBuyPrice()) {
+                    playerCoins -= selected.getBuyPrice();
+                    
+                    // Add to inventory management list
+                    boolean containsItem = false;
+                    for (Item invItem : playerInventory) {
+                        if (invItem.getName().equals(selected.getName())) {
+                            invItem.setQuantity(invItem.getQuantity() + 1);
+                            containsItem = true;
+                            break;
+                        }
+                    }
+                    if (!containsItem) {
+                        playerInventory.add(new Item(selected.getName(), selected.getBuyPrice(), 1));
+                    }
+                }
+            }
+        } 
+        else if (currentMartState == MartState.SELL) {
+            if (!playerInventory.isEmpty()) {
+                if (e.getKeyCode() == KeyEvent.VK_W || e.getKeyCode() == KeyEvent.VK_UP) { martCursor = Math.max(0, martCursor - 1); }
+                if (e.getKeyCode() == KeyEvent.VK_S || e.getKeyCode() == KeyEvent.VK_DOWN) { martCursor = Math.min(playerInventory.size() - 1, martCursor + 1); }
+                
+                if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+                    Item itemToSell = playerInventory.get(martCursor);
+                    playerCoins += itemToSell.getSellPrice();
+                    itemToSell.setQuantity(itemToSell.getQuantity() - 1);
+                    
+                    if (itemToSell.getQuantity() <= 0) {
+                        playerInventory.remove(martCursor);
+                        martCursor = Math.max(0, martCursor - 1);
+                    }
+                }
+            }
+        } 
+        else if (currentMartState == MartState.LEAVE) {
+            if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+                currentState = GameState.OVERWORLD; // Close overlay interface
+            }
+        }
+    }
+        // --- PAUSE MENU CONTROLS ---
         if (currentState == GameState.PAUSE) {
             if (e.getKeyCode() == KeyEvent.VK_W || e.getKeyCode() == KeyEvent.VK_UP) {
                 pauseCursor--;
@@ -1335,11 +1465,17 @@ void checkMapTransition() {
                                 oakHandler.startPostGiftDialogue("Take good care of your Pokemon!"); // Just shows text
                             }
                         }
+                        else if (npc.getType().equals("SHOPKEEPER")) {
+                            martMessage = "Welcome to the PokéMart! How can I help you?";
+                            currentMartState = MartState.MAIN;
+                            martCursor = 0;
+                            currentState = GameState.MART_MENU; // Trigger UI State loop
+                            break;
+                        }
                     }
                 }
             }
-
-            } 
+        } 
         else if (currentState == GameState.BATTLE) {
             // --- 1. MENU NAVIGATION (W/A/S/D / Arrows) ---
             if (currentBattleMenu == BattleMenu.MAIN || currentBattleMenu == BattleMenu.FIGHT) {
@@ -1401,7 +1537,7 @@ void checkMapTransition() {
                         battleMessage = "You threw a Pokéball!";
                         currentBattleMenu = BattleMenu.CATCH_THROWN;
                     } 
-                    else if (menuCursor == 1) { // Potion
+                    else if (menuCursor == 1 && playerInventory.indexOf(dummyPotion) > -1) { // Potion
                         myPokemon.heal(20);
                         battleMessage = "You used a Potion! " + myPokemon.getName() + " healed!";
                         currentBattleMenu = BattleMenu.SWAP_MESSAGE; 
@@ -1548,6 +1684,66 @@ void checkMapTransition() {
 //         this.chance = chance;
 //     }
 }
+
+private void drawMartUI(Graphics2D g2) {
+    int boxX = 50, boxY = getHeight() - 180, boxW = getWidth() - 100, boxH = 140;
+
+    // 1. Render Global Dialogue Background
+    g2.setColor(new Color(0, 0, 0, 220));
+    g2.fillRoundRect(boxX, boxY, boxW, boxH, 20, 20);
+    g2.setColor(Color.WHITE);
+    g2.setStroke(new BasicStroke(3));
+    g2.drawRoundRect(boxX, boxY, boxW, boxH, 20, 20);
+
+    // Render Player Wallet Balance Upper Right
+    g2.setColor(new Color(0, 0, 0, 200));
+    g2.fillRect(getWidth() - 220, 30, 170, 50);
+    g2.setColor(Color.WHITE);
+    g2.drawRect(getWidth() - 220, 30, 170, 50);
+    g2.setFont(new Font("Monospaced", Font.BOLD, 18));
+    g2.drawString("Cash: $" + playerCoins, getWidth() - 200, 62);
+
+    g2.setFont(new Font("Arial", Font.BOLD, 18));
+
+    // 2. STATE SUB-VIEWS
+    if (currentMartState == MartState.MAIN) {
+        g2.drawString(martMessage, boxX + 30, boxY + 45);
+        
+        String[] options = {"[ BUY ]", "[ SELL ]", "[ LEAVE ]"};
+        for (int i = 0; i < options.length; i++) {
+            if (martCursor == i) g2.setColor(Color.YELLOW); else g2.setColor(Color.WHITE);
+            g2.drawString(options[i], boxX + 50 + (i * 180), boxY + 95);
+        }
+    } 
+    else if (currentMartState == MartState.BUY) {
+        g2.drawString("Shop Stock (Press BACKSPACE to go back):", boxX + 30, boxY + 30);
+        for (int i = 0; i < martStock.size(); i++) {
+            Item item = martStock.get(i);
+            if (martCursor == i) g2.setColor(Color.YELLOW); else g2.setColor(Color.WHITE);
+            g2.drawString((martCursor == i ? "> " : "  ") + item.getName() + " - $" + item.getBuyPrice(), boxX + 50, boxY + 65 + (i * 25));
+        }
+    } 
+    else if (currentMartState == MartState.SELL) {
+        g2.drawString("Your Inventory (Press BACKSPACE to go back):", boxX + 30, boxY + 30);
+        if (playerInventory.isEmpty()) {
+            g2.setColor(Color.LIGHT_GRAY);
+            g2.drawString("You have no items to sell.", boxX + 50, boxY + 65);
+        } else {
+            for (int i = 0; i < playerInventory.size(); i++) {
+                Item item = playerInventory.get(i);
+                if (martCursor == i) g2.setColor(Color.YELLOW); else g2.setColor(Color.WHITE);
+                g2.drawString((martCursor == i ? "> " : "  ") + item.getName() + " x" + item.getQuantity() + " (Sells: $" + item.getSellPrice() + ")", boxX + 50, boxY + 65 + (i * 25));
+            }
+        }
+    } 
+    else if (currentMartState == MartState.LEAVE) {
+        g2.drawString(martMessage, boxX + 30, boxY + 50);
+        g2.setFont(new Font("Arial", Font.ITALIC, 14));
+        g2.setColor(Color.LIGHT_GRAY);
+        g2.drawString("Press ENTER to exit...", boxX + 30, boxY + 100);
+    }
+}
+
 
 public void determineRouteFromMap(String mapFilePath) {
     // Convert to lowercase to make checking easier
